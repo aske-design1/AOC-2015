@@ -1,6 +1,6 @@
 pub mod day1;
 
-pub trait Solution<'a> {
-    fn part1(&self) -> &'a str; 
-    fn part2(&self) -> &'a str;
+pub trait Solution {
+    fn part1(&self) -> String; 
+    fn part2(&self) -> String;
 }
