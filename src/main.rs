@@ -1,17 +1,22 @@
-use std::time::Instant;
-use std::fs::read_to_string;
+use std::{
+    env, time::Instant
+};
 
-const PATH: &'static str = "./input_files/day7.txt";
-use AOC_2015::solutions::{Solution, day7::Day7};
+use AOC_2015::{
+    solutions::Solution,
+    input
+};
+
 
 fn main() {
-    let file = handle_file(PATH);
-
-    let day = Box::new(Day7::new(file));
-    solve_day(day);
+    let args: Vec<String> = env::args().collect();
+    match input::parse_args(&args) {
+        Ok(day) => print_solution(day),
+        Err(e) => panic!("Error: {}", e)
+    }
 }
 
-fn solve_day(day: Box<dyn Solution>) {
+fn print_solution(day: Box<dyn Solution>) {
     let timer = Instant::now();
     println!("The solution to part 1 is: {}", day.part1());
     println!("Time it took: {}", timer.elapsed().as_secs_f64());
@@ -21,9 +26,3 @@ fn solve_day(day: Box<dyn Solution>) {
     println!("Time it took: {}", timer.elapsed().as_secs_f64());
 }
 
-fn handle_file(path: &str) -> String {
-    match read_to_string(&path) {
-        Ok(cont) => cont,
-        Err(e) => panic!("Error: {}", e),
-    }
-}
