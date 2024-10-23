@@ -1,14 +1,13 @@
-use AOC_2015::solutions::{Solution, day1, day2};
 use std::time::Instant;
 use std::fs::read_to_string;
 
-const PATH: &'static str = "./input_files/day2.txt";
-
+const PATH: &'static str = "./input_files/day7.txt";
+use AOC_2015::solutions::{Solution, day7::Day7};
 
 fn main() {
     let file = handle_file(PATH);
 
-    let day = Box::new(day2::Day2::new(&file));
+    let day = Box::new(Day7::new(file));
     solve_day(day);
 }
 
