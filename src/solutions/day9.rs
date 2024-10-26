@@ -1,102 +1,11 @@
 
 use super::*;
-use std::collections::{HashMap, VecDeque};
+use crate::util::path_finder::Paths;
+use std::collections::HashMap;
 
 pub struct Day9 {
     input: Vec<String>,
 }
-
-
-#[derive(Clone)]
-struct Path {
-    bitmask: Vec<bool>,
-    total_dist: u32,
-    current: usize
-} 
-impl Path {
-    pub fn new(bitmask: Vec<bool>, total_dist: u32, current: usize) -> Self {
-        Self { bitmask, total_dist, current }
-    }
-    fn is_bitmask_filled(&self) -> bool {
-        for bit in self.bitmask.iter() {
-            if !bit { return false }
-        }
-        true
-    }
-
-    #[allow(dead_code)]
-    fn print(&self) {
-        println!("Path:\nBitmask: {:?}\nTotal dist: {}\nCurrent: {}", self.bitmask, self.total_dist, self.current)
-    }
-}
-
-struct Paths(VecDeque<Path>);
-impl Paths {
-    fn new() -> Self {
-        Paths(VecDeque::new())
-    }
-
-    fn add(&mut self, mut bitmask: Vec<bool>, idx: usize, total_dist: u32) {
-        bitmask[idx] = true; 
-        let path = Path::new(bitmask, total_dist, idx);
-        self.0.push_back(path);
-    }
-
-    fn pop(&mut self, front: bool) -> Option<Path> {
-        match front {
-            true => self.0.pop_front(),
-            false => self.0.pop_back(),
-        }
-    }
-
-    fn sort(&mut self) {
-        let mut vec: Vec<Path> = self.0.clone().into();
-        vec.sort_by(|a, b| {
-            let mut dif = a.total_dist.cmp(&(b.total_dist));
-            if std::cmp::Ordering::Equal == dif {
-                dif = b.bitmask.iter().filter(|bit| **bit).count()
-                .cmp(&a.bitmask.iter().filter(|bit| **bit).count());
-            }
-            dif
-        });
-
-        self.0 = VecDeque::from(vec);
-    }
-
-    #[allow(dead_code)]
-    fn print(&self) {
-        println!("-------------------- Paths --------------------");
-        for path in self.0.iter() {
-            path.print();
-        }
-    }
-
-    fn find_path(&mut self, grid: &Vec<Vec<u32>>, smallest: bool) -> Path {
-        while let Some(path) = self.pop(smallest) {
-            //checks if bitmask is filled then exit
-            if path.is_bitmask_filled() {
-                return path
-            }
-
-            for (idx, cities_len) in grid[path.current].iter().enumerate() {
-                //checking bitmask
-                if !path.bitmask[idx] {
-                    //adding path with updated bitmask
-                    let bitmask = path.bitmask.clone();
-                    self.add(bitmask, idx, cities_len + path.total_dist);
-                }
-            }
-            
-            //Sort the paths such that the smallest value is first
-            self.sort();
-        }
-
-        unreachable!()
-    }
-
-}
-
-
 
 impl Day9 {
     pub fn new(input: String) -> Self {
@@ -130,45 +39,19 @@ impl Day9 {
 
         arr
     }
-
-    fn route(&self, cities: Vec<Vec<u32>>) -> u32 {
-        let mut paths = Paths::new();
-        for (i, _) in cities.iter().enumerate() {
-            let bitmask = vec![false; cities.len()];
-            paths.add(bitmask, i, 0);
-        }
-        paths.find_path(&cities, true).total_dist
-    }
-    
-    fn largest_route(&self, cities: Vec<Vec<u32>>) -> u32 {
-        let mut paths_to_check = Paths::new();
-        for (i, _) in cities.iter().enumerate() {
-            let bitmask = vec![false; cities.len()];
-            paths_to_check.add(bitmask, i, 0);
-        }
-
-        let mut largest_dist: Vec<u32> = Vec::new();
-        while let Some(path_to_check) = paths_to_check.pop(false) {
-            let mut paths = Paths::new();
-            paths.add(path_to_check.bitmask, path_to_check.current, path_to_check.total_dist);
-            largest_dist.push(paths.find_path(&cities, false).total_dist);
-        }
-        largest_dist.sort();
-        *largest_dist.last().unwrap()
-    }
-    
-
 }
 
 impl Solution for Day9 {
     fn part1(&self) -> String {
         let arr_with_cities = self.find_cities();
-        let smallest_route = self.route(arr_with_cities);
+        let smallest_route = Paths::<u32>::new().smallest_route(arr_with_cities);
+
         format!("{}", smallest_route)
     }
     fn part2(&self) -> String {
         let arr_with_cities = self.find_cities();
-        let largest_route = self.largest_route(arr_with_cities);
+        let largest_route = Paths::<u32>::new().largest_route(arr_with_cities);
+
         format!("{}", largest_route)
     }
 }

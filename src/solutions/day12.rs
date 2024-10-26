@@ -10,35 +10,6 @@ impl Day12 {
         Self { input }
     }
 
-    fn explore_structure(&self, ignore_this: &str, idx: usize) -> usize {
-        let bytes = self.input.as_bytes();
-        let mut i = idx + 1;
-        let len = ignore_this.len();
-
-        let mut unclosed_struct = 1;
-
-        let mut found = false;
-        while i < bytes.len() && bytes[i] != b'}' {
-            if !found && i + len < bytes.len() && &self.input[i..i + len] == ignore_this {
-                found = true;
-            }
-            unclosed_struct += match bytes[i] {
-                b'{' => 1,
-                b'}' => -1,
-                _ => 0,
-            };
-            i += 1;
-        }
-
-        //println!("{}", &self.input[idx..i]);
-
-        if found {
-            i
-        } else {
-            idx
-        }
-    }
-
     fn sum_numbers(&self) -> i32 {
         let mut total_sum = 0;
         let mut num_to_parsed = "".to_string();
@@ -86,7 +57,6 @@ impl Solution for Day12 {
     }
     fn part2(&self) -> String {
         let json: serde_json::Value = serde_json::from_str(self.input.as_str()).unwrap();
-
 
         let total = Self::sum(&json);
         format!("{}", total)

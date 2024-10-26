@@ -39,6 +39,7 @@ mod template {
     }
 
     impl Template {
+        #[allow(dead_code)]
         pub fn new(input: String) -> Self {
             Self { input }
         }
