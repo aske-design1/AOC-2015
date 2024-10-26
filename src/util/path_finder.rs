@@ -95,21 +95,21 @@ where
         unreachable!()
     }
 
-    pub fn smallest_route(&self, cities: Vec<Vec<T>>) -> T {
+    pub fn smallest_route(&self, grid: Vec<Vec<T>>) -> T {
         let mut paths = Paths::<T>::new();
         
-        let len = cities.len();
+        let len = grid.len();
         for i in 0..len {
             let bitmask = vec![false; len];
             paths.add(bitmask, i, T::default());
         }
-        paths.find_path(&cities, true).total_dist
+        paths.find_path(&grid, true).total_dist
     }
     
-    pub fn largest_route(&self, cities: Vec<Vec<T>>) -> T {
+    pub fn largest_route(&self, grid: Vec<Vec<T>>) -> T {
         let mut paths_to_check = Paths::new();
         
-        let len = cities.len();
+        let len = grid.len();
         for i in 0..len {
             let bitmask = vec![false; len];
             paths_to_check.add(bitmask, i, T::default());
@@ -119,7 +119,7 @@ where
         while let Some(path_to_check) = paths_to_check.pop(false) {
             let mut paths = Paths::new();
             paths.add(path_to_check.bitmask, path_to_check.current, path_to_check.total_dist);
-            largest_dist.push(paths.find_path(&cities, false).total_dist);
+            largest_dist.push(paths.find_path(&grid, false).total_dist);
         }
         largest_dist.sort();
         *largest_dist.last().unwrap()
