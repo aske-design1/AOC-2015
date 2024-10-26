@@ -16,6 +16,8 @@ impl Day4 {
 }
 
 impl Solution for Day4 {
+    type Output = String;
+
     fn part1(&self) -> String {
         let mut hash: String = String::from(""); 
         let mut num = 0u32; 
@@ -42,7 +44,7 @@ impl Solution for Day4 {
             );
         }
 
-        format!("{}", num)
+        format!("{}",num)
     } 
 }
 
@@ -53,7 +55,7 @@ mod tests {
     #[test]
     fn test1() {
         let test = Day4::new("abcdef".to_string());
-        assert_eq!(test.part1(), "609043".to_string());
+        assert_eq!(test.part1().parse::<u32>().unwrap(), 609043);
     }
     #[test]
     fn test2() {}

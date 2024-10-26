@@ -64,11 +64,13 @@ impl Day5 {
 }
 
 impl Solution for Day5 {
+    type Output = String;
+
     fn part1(&self) -> String {        
-        format!("{}", self.input.iter().filter(|line| Self::is_nice(line)).count())
+        self.input.iter().filter(|line| Self::is_nice(line)).count().to_string()
     }
     fn part2(&self) -> String {
-        format!("{}", self.input.iter().filter(|line| Self::is_nice2(line)).count())
+        self.input.iter().filter(|line| Self::is_nice2(line)).count().to_string()
     } 
 }
 
@@ -81,24 +83,24 @@ mod tests {
         let test = Day5::new("ugknbfddgicrmopn\r\naaa\r\njchzalrnumimnmhp\r\nhaegwjzuvuyypxyu\r\ndvszwmarrgswjxmb"
             .to_string()
         );
-        assert_eq!(test.part1(), "2".to_string());
+        assert_eq!(test.part2().parse::<u32>().unwrap(), 2);
     }
     #[test]
     fn test2() {
         let test = Day5::new("dvszwmarrgswjxmb".to_string());
-        assert_eq!(test.part1(), "0".to_string());
+        assert_eq!(test.part2().parse::<u32>().unwrap(), 0);
     }
 
     #[test]
     fn test3() {
         let test = Day5::new("qjhvhtzxzqqjkmpb\r\nxxyxx\r\nuurcxstgmygtbstg\r\nieodomkazucvgmuy".to_string());
-        assert_eq!(test.part2(), "2".to_string());
+        assert_eq!(test.part2().parse::<u32>().unwrap(), 2);
     }
 
     #[test]
     fn test4() {
         let test = Day5::new("xxyxx".to_string());
-        assert_eq!(test.part2(), "1".to_string());
+        assert_eq!(test.part2().parse::<u32>().unwrap(), 1);
     }
 
     #[test] 

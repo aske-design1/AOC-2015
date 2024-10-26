@@ -24,10 +24,10 @@ pub mod day23;
 pub mod day24; 
 pub mod day25;
 
-
 pub trait Solution {
-    fn part1(&self) -> String; 
-    fn part2(&self) -> String;
+    type Output;
+    fn part1(&self) -> Self::Output; 
+    fn part2(&self) -> Self::Output;
 }
 
 mod template {
@@ -46,8 +46,9 @@ mod template {
     }
 
     impl Solution for Template {
-        fn part1(&self) -> String { format!("") }
-        fn part2(&self) -> String { format!("") } 
+        type Output = String;
+        fn part1(&self) -> String { 0.to_string() }
+        fn part2(&self) -> String { 0.to_string() } 
     }
 
     #[cfg(test)]

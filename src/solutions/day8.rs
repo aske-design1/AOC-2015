@@ -54,6 +54,7 @@ impl Day8 {
 }
 
 impl Solution for Day8 {
+    type Output = String;
     fn part1(&self) -> String {
         let mut total_literal_len = 0;
         let mut total_string_len = 0;

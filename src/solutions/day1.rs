@@ -11,8 +11,9 @@ impl Day1 {
 }
 
 impl Solution for Day1 {
+    type Output = String;
     fn part1(&self) -> String {
-        format!("{}", self.input
+        format!("{}",self.input
         .chars()
         .fold(0, |accu, ch| 
             accu + 
@@ -30,8 +31,8 @@ impl Solution for Day1 {
         });
         
         match idx {
-            Some(i) => format!("{}",i+1),
-            None => format!("Error")
+            Some(i) => format!("{}", i+1),
+            None => format!("{}", -1)
         }
     } 
 }
@@ -43,7 +44,7 @@ mod tests {
     #[test]
     fn test1() {
         let test = Day1::new("(())".to_string());
-        assert_eq!(test.part1(), "0".to_string());
+        assert_eq!(test.part1(), "-1".to_string());
     }
     #[test]
     fn test2() {
@@ -53,7 +54,7 @@ mod tests {
     #[test]
     fn test3() {
         let test = Day1::new("))(((((".to_string());
-        assert_eq!(test.part1(), "3".to_string());
+        assert_eq!(test.part1(), "2".to_string());
     }
     #[test]
     fn test4() {
@@ -68,6 +69,6 @@ mod tests {
     #[test]
     fn test6() {
         let test = Day1::new("()())".to_string());
-        assert_eq!(test.part2(), "5".to_string());
+        assert_eq!(test.part1(), "5".to_string());
     }
 }

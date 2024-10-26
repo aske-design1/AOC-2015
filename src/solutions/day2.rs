@@ -44,6 +44,7 @@ impl Day2 {
 }
 
 impl Solution for Day2 {
+    type Output = String;
     fn part1(&self) -> String {
         let mut total = 0u32;
         for str in self.input.iter() {
@@ -69,12 +70,12 @@ mod tests {
     #[test]
     fn test1() {
         let day = Day2::new("2x3x4\r\n1x1x10");
-        assert_eq!(day.part1(), format!("101"));
+        assert_eq!(day.part1().as_str(), "101");
     }
     #[test]
     fn test2() {
         let day = Day2::new("2x3x4\r\n1x1x10");
-        assert_eq!(day.part2(), format!("48"));
+        assert_eq!(day.part2().as_str(), "48");
     }
     
 }

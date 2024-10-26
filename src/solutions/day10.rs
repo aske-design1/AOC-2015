@@ -36,6 +36,7 @@ use super::*;
     }
 
     impl Solution for Day10 {
+        type Output = String;
         fn part1(&self) -> String { 
             format!("{}", self.look_and_say(40).len()) 
         }

@@ -114,6 +114,7 @@ impl Day7 {
 }
 
 impl Solution for Day7 {
+    type Output = String;
     fn part1(&self) -> String { 
         let mut variables: HashMap<&str, u16> = HashMap::new();
 

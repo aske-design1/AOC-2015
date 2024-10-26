@@ -90,6 +90,7 @@ impl Password {
 
 
 impl Solution for Day11 {
+    type Output = String;
     fn part1(&self) -> String { 
         //Interval 97-122
         let mut password = Password::new(self.input.clone().as_bytes().to_vec());

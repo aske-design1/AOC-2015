@@ -76,6 +76,8 @@ impl Day6 {
 }
 
 impl Solution for Day6 {
+    type Output = String;
+
     fn part1(&self) -> String {
         let mut light_arr = [[0u8; 1000]; 1000];
 
@@ -83,24 +85,19 @@ impl Solution for Day6 {
             Self::light_operations(line, &mut light_arr);
         }
 
-        format!(
-            "{}",
-            light_arr.iter().fold(0, |acu, arr| acu
-                + arr.iter().fold(0, |acc, el| acc + (*el as u32)))
-        )
+        light_arr.iter().fold(0, |acu, arr| acu
+            + arr.iter().fold(0, |acc, el| acc + (*el as u32))).to_string()
     }
     fn part2(&self) -> String {
-        let mut light_arr = vec![vec![0u16; 1000]; 1000];
+        let mut light_arr: Vec<Vec<u16>> = vec![vec![0u16; 1000]; 1000];
 
         for line in self.input.iter() {
             Self::light_operations_part_2(line, &mut light_arr);
         }
 
-        format!(
-            "{}",
-            light_arr.iter().fold(0, |acu, arr| acu
-                + arr.iter().fold(0, |acc, el| acc + (*el as u32)))
-        )
+    
+        light_arr.iter().fold(0, |acu, arr| acu
+            + arr.iter().fold(0, |acc, el| acc + (*el as u32))).to_string()
     }
 }
 
@@ -113,13 +110,13 @@ mod tests {
         let input = "turn on 0,0 through 999,999\r\ntoggle 0,0 through 999,0\r\nturn off 499,499 through 500,500";
 
         let test = Day6::new(input.to_string());
-        assert_eq!(test.part1(), "998996".to_string());
+        assert_eq!(test.part1().parse::<u32>().unwrap(), 998996);
     }
     #[test]
     fn test2() {
         let input = "toggle 0,0 through 999,999\r\nturn off 0,0 through 0,0";
 
         let test = Day6::new(input.to_string());
-        assert_eq!(test.part2(), "1999999".to_string());
+        assert_eq!(test.part2().parse::<u32>().unwrap(), 1999999);
     }
 }

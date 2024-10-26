@@ -12,6 +12,8 @@ impl Day3 {
 }
 
 impl Solution for Day3 {
+    type Output = String;
+
     fn part1(&self) -> String {
         let mut cur_coordinate = (0,0);
         let mut houses: HashSet<(i32, i32)> = HashSet::new();
@@ -62,11 +64,11 @@ mod tests {
     #[test]
     fn test1() {
         let test = Day3::new("^v^v^v^v^v".to_string());
-        assert_eq!(test.part1(), "2".to_string());
+        assert_eq!(test.part1().parse::<u32>().unwrap(), 2);
     }
     #[test]
     fn test2() {
         let test = Day3::new("^v^v^v^v^v".to_string());
-        assert_eq!(test.part2(), "11".to_string());
+        assert_eq!(test.part2().parse::<u32>().unwrap(), 11);
     }
 }

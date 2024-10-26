@@ -1,5 +1,5 @@
 use super::*;
-use crate::util::path_finder::Paths;
+use crate::util::path_finder::PathFinder;
 
     pub struct Day13 {
         input: Vec<String>
@@ -24,9 +24,10 @@ use crate::util::path_finder::Paths;
     }
 
     impl Solution for Day13 {
+        type Output = String;
         fn part1(&self) -> String { 
             let grid = self.convert_to_grid();
-            let most_happiness = Paths::<i32>::new().largest_route(grid);
+            let most_happiness = PathFinder::<i32>::new().largest_route(grid);
             format!("{}", most_happiness) 
         }
         fn part2(&self) -> String { format!("") } 

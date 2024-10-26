@@ -28,7 +28,7 @@ use crate::solutions::{
     day25
 };
 
-fn create_day_object(day_num: u8, input: String) -> Result<Box<dyn Solution>, String> {
+fn create_day_object(day_num: u8, input: String) -> Result<Box<dyn Solution<Output = String>>, String> {
     match day_num {
         1 => Ok(Box::new(day1::Day1::new(input))),
         2 => Ok(Box::new(day2::Day2::new(&input))),
@@ -58,7 +58,7 @@ fn create_day_object(day_num: u8, input: String) -> Result<Box<dyn Solution>, St
     }
 }
 
-fn create_day_object_with_bytes(day_num: u8, buffer: Vec<u8>) -> Result<Box<dyn Solution>, String> {
+fn create_day_object_with_bytes(day_num: u8, buffer: Vec<u8>) -> Result<Box<dyn Solution<Output = String>>, String> {
     match day_num {
         8 => Ok(Box::new(day8::Day8::new(buffer))),
         _ => Err("Not a valid day number".to_string())
@@ -66,7 +66,7 @@ fn create_day_object_with_bytes(day_num: u8, buffer: Vec<u8>) -> Result<Box<dyn 
 }
 
 
-pub fn parse_args(args: &Vec<String>) -> Result<Box<dyn Solution>, String> {
+pub fn parse_args(args: &Vec<String>) -> Result<Box<dyn Solution<Output = String>>, String> {
     if args.len() < 3 {
         return Err("Error: Not enough arguments supplied".to_string());
     }

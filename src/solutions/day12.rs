@@ -51,6 +51,7 @@ impl Day12 {
 }
 
 impl Solution for Day12 {
+    type Output = String;
     fn part1(&self) -> String {
         let total = self.sum_numbers();
         format!("{}", total)

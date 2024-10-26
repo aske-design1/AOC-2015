@@ -7,6 +7,30 @@ pub struct Day9 {
     input: Vec<String>,
 }
 
+
+pub struct Path {
+    bitmask: Vec<bool>,
+    total_dist: u32,
+    current: usize
+}
+
+impl Path {
+    pub fn new(bitmask: Vec<bool>, total_dist: u32, current: usize) -> Self {
+        Self { bitmask, total_dist, current }
+    }
+    fn is_bitmask_filled(&self) -> bool {
+        for bit in self.bitmask.iter() {
+            if !bit { return false }
+        }
+        true
+    }
+
+    #[allow(dead_code)]
+    fn print(&self) {
+        println!("Path:\nBitmask: {:?}\nTotal dist: {}\nCurrent: {}", self.bitmask, self.total_dist, self.current)
+    }
+}
+
 impl Day9 {
     pub fn new(input: String) -> Self {
         Self { input: input.split("\r\n").map(|line| line.to_string()).collect() }
@@ -42,9 +66,10 @@ impl Day9 {
 }
 
 impl Solution for Day9 {
+    type Output = String;
     fn part1(&self) -> String {
         let arr_with_cities = self.find_cities();
-        let smallest_route = Paths::<u32>::new().smallest_route(arr_with_cities);
+        let smallest_route = Paths::<Path>::new().smallest_route(arr_with_cities);
 
         format!("{}", smallest_route)
     }
