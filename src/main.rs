@@ -2,7 +2,7 @@ use std::{
     env, time::Instant
 };
 
-use AOC_2015::{
+use aoc_2015::{
     solutions::Solution,
     input
 };
