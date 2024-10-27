@@ -2,38 +2,36 @@ use std::{
     clone, collections::VecDeque, ops::Add
 };
 
-pub trait PathFindingBehaviour<T> {
-    fn add_to_list(&mut self, grid: Vec<Vec<T>>);
-    fn add_new_element(&mut self);
-}
 
 pub trait PathData<T> {
     fn total_dist(&self) -> T;
     fn bitmask(&self) -> &Vec<bool>;
     fn get_bitmask_element(&self, idx: Option<usize>) -> bool;
     fn is_bitmask_filled(&self) -> bool;
+    fn current(&self) -> usize;
 }
 
-pub struct Paths<T>(VecDeque<T>);
-impl<T, U, V> Paths<T>
+pub trait PathList<T: PathData<U>, U> {
+    fn get(&mut self) -> &mut Self;
+    fn pop_front(&mut self) -> Option<T>;
+    fn pop_back(&mut self) -> Option<T>;
+}
+//pub struct PathList<T>(VecDeque<T>);
+pub trait Paths<T,U, V>
 where
     T: Clone + PathData<U>,
-    U: PartialEq + std::fmt::Display + Default + Clone + Ord,
-    V: PathFindingBehaviour<U>
+    U: PartialEq + std::fmt::Display + Default + Clone + Ord + Add,
+    V: PathList<T, U>
 {
+    type Output;
     /*fn add(&mut self, mut bitmask: Vec<bool>, idx: usize, total_dist: T) {
         bitmask[idx] = true; 
         let path = T::new(bitmask, total_dist, idx);
         self.0.push_back(path);
     }*/
-
-    fn new() -> Self {
-        Self(VecDeque::<T>::new())
-    }
-
-    fn pop_front(&mut self) -> Option<T> { self.0.pop_front() }
-    fn pop_back(&mut self) -> Option<T> { self.0.pop_back() }
-
+    fn new(structure: V) -> Self::Output;
+    fn pop_front(&mut self) -> Option<T> { V.pop_front() }
+    fn pop_back(&mut self) -> Option<T> { V.pop_back() }
     fn sort(&mut self) {
         let mut vec: Vec<T> = self.0.clone().into();
         vec.sort_by(|a, b| {
@@ -47,7 +45,6 @@ where
 
         self.0 = VecDeque::from(vec);
     }
-
     #[allow(dead_code)]
     /*fn print(&self) {
         println!("-------------------- Paths --------------------");
@@ -55,8 +52,7 @@ where
             path.print();
         }
     }*/
-
-    fn find_path(&mut self, grid: &Vec<Vec<T>>, smallest_dist: bool) -> Path<T> {
+    fn find_path(&mut self, grid: &Vec<Vec<U>>, smallest_dist: bool) -> T {
         while let Some(path) = 
         if smallest_dist { self.pop_front() } else { self.pop_back() } {
             
@@ -65,7 +61,7 @@ where
                 return path
             }
 
-            for (idx, cities_len) in grid[path.current].iter().enumerate() {
+            for (idx, cities_len) in grid[path.current()].iter().enumerate() {
                 //checking bitmask
                 if !path.get_bitmask_element(Some(idx)) {
                     //adding path with updated bitmask
@@ -80,8 +76,7 @@ where
 
         unreachable!()
     }
-
-    pub fn smallest_route(&self, grid: Vec<Vec<T>>) -> T {
+    pub fn smallest_route(&self, grid: Vec<Vec<U>>) -> T {
         let mut paths = Paths::new();
         
         let len = grid.len();
@@ -90,15 +85,14 @@ where
             paths.add(len, i, U::default());
         }
         paths.find_path(&grid, true).total_dist
-    }
-    
+    }  
     pub fn largest_route(&self, grid: Vec<Vec<U>>) -> U {
         let mut paths_to_check = Paths::new();
         
         let len = grid.len();
         for i in 0..len {
             let bitmask = vec![false; len];
-            paths_to_check.add(bitmask, i, T::default());
+            paths_to_check.add(bitmask, i, U::default());
         }
 
         let mut largest_dist: Vec<U> = Vec::new();
@@ -110,5 +104,7 @@ where
         largest_dist.sort();
         *largest_dist.last().unwrap()
     }
-
+    fn add_to_list(&mut self, grid: Vec<Vec<T>>);
+    fn add_new_element(&mut self);
 }
+
