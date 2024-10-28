@@ -1,7 +1,7 @@
 
 use super::*;
-use crate::util::path_finder::Paths;
 use std::collections::HashMap;
+use crate::util::path_finder::{Path, PathFinder};
 
 pub struct Day9 {
     input: Vec<String>,
@@ -44,15 +44,68 @@ impl Day9 {
 impl Solution for Day9 {
     fn part1(&self) -> String {
         let arr_with_cities = self.find_cities();
-        let smallest_route = Paths::<u32>::new().smallest_route(arr_with_cities);
-
+        let mut paths = PathFinder::new(Day9Path::new());
+        let smallest_route = paths.route(arr_with_cities, true);
         format!("{}", smallest_route)
     }
     fn part2(&self) -> String {
         let arr_with_cities = self.find_cities();
-        let largest_route = Paths::<u32>::new().largest_route(arr_with_cities);
-
+        let mut paths = PathFinder::new(Day9Path::new());
+        let largest_route = paths.route(arr_with_cities, false);
         format!("{}", largest_route)
+    }
+}
+
+pub struct Day9Path {
+    bitmask: Vec<bool>,
+    total_dist: u32,
+    current_idx: usize,
+}
+
+impl Day9Path {
+    pub fn new() -> Self {
+        Self{
+            bitmask: vec![],
+            total_dist: 0,
+            current_idx: 0,
+        }
+    }
+}
+
+impl Path<u32> for Day9Path {
+
+    fn create_new(&self, mut bitmask: Vec<bool>, idx: usize, value: u32) -> Box<dyn Path<u32>> {
+        bitmask[idx] = true;
+        Box::new(
+            Self {
+                bitmask,
+                current_idx: idx,
+                total_dist: value
+            }
+        )
+    }
+
+    fn from_existing(&self, bitmask: Vec<bool>, idx: usize, value: u32) -> Box<dyn Path<u32>> { self.create_new(bitmask, idx, value) }
+
+    fn get_total_dist(&self) -> u32 { self.total_dist }
+    fn get_current_idx(&self) -> usize { self.current_idx }
+    fn get_bitmask(&self) -> &Vec<bool> { &self.bitmask }
+    fn get_bitmask_entry(&self, idx:usize) -> Option<bool> {
+        match self.bitmask.get(idx) {
+            Some(val) => Some(*val),
+            None => None
+        }
+    }
+    fn check_fulfillment_criteria(&self) -> bool {
+        for bit in self.bitmask.iter() {
+            if !bit { return false }
+        }
+        true
+    }
+
+    #[allow(dead_code)]
+    fn print(&self) {
+        println!("Path:\nBitmask: {:?}\nTotal dist: {}\nCurrent: {}", self.bitmask, self.total_dist, self.current_idx)
     }
 }
 

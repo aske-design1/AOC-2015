@@ -7,7 +7,6 @@ use aoc_2015::{
     input
 };
 
-
 fn main() {
     let args: Vec<String> = env::args().collect();
     match input::parse_args(&args) {
