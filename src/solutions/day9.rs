@@ -74,33 +74,39 @@ impl Day9Path {
 
 impl Path<u32> for Day9Path {
 
-    fn create_new(&self, mut bitmask: Vec<bool>, idx: usize, value: u32) -> Box<dyn Path<u32>> {
+    fn create_new(&self, mut bitmask: Vec<bool>, idx: usize) -> Box<dyn Path<u32>> {
         bitmask[idx] = true;
         Box::new(
             Self {
                 bitmask,
                 current_idx: idx,
-                total_dist: value
+                total_dist: 0
             }
         )
     }
 
-    fn from_existing(&self, bitmask: Vec<bool>, idx: usize, value: u32) -> Box<dyn Path<u32>> { self.create_new(bitmask, idx, value) }
+    fn from_existing(&self, path_from: &Box<dyn Path<u32>>, idx: usize, value: u32) -> Box<dyn Path<u32>> { 
+        let mut bitmask = path_from.get_bitmask().clone();
+        bitmask[idx] = true; 
+        Box::new(Self {
+            bitmask,
+            current_idx: idx,
+            total_dist: value
+        })
+    }
 
     fn get_total_dist(&self) -> u32 { self.total_dist }
     fn get_current_idx(&self) -> usize { self.current_idx }
     fn get_bitmask(&self) -> &Vec<bool> { &self.bitmask }
-    fn get_bitmask_entry(&self, idx:usize) -> Option<bool> {
-        match self.bitmask.get(idx) {
-            Some(val) => Some(*val),
-            None => None
-        }
-    }
+    fn get_bitmask_entry(&self, idx:usize) -> Option<&bool> { self.bitmask.get(idx) }
     fn check_fulfillment_criteria(&self) -> bool {
         for bit in self.bitmask.iter() {
             if !bit { return false }
         }
         true
+    }
+    fn calculate_dist(&self, grid: &Vec<Vec<u32>>, idx: usize) -> u32 {
+        self.total_dist + grid[self.current_idx][idx]
     }
 
     #[allow(dead_code)]

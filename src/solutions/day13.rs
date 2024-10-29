@@ -1,9 +1,7 @@
 use super::*;
-use std::{
-    cmp::Ordering,
-    collections::{binary_heap, BinaryHeap, HashMap},
-    ops::Add,
-};
+use std::collections::HashMap;
+
+use crate::util::path_finder::{Path, PathFinder};
 
 pub struct Day13 {
     input: Vec<String>,
@@ -18,7 +16,7 @@ impl Day13 {
         }
     }
 
-    /*fn convert_to_grid(&self) -> Vec<Vec<i32>> {
+    fn convert_to_grid(&self) -> Vec<Vec<i32>> {
         let mut indexer = HashMap::new();
         for line in self.input.iter() {
             let name = line.split(" ").collect::<Vec<&str>>()[0];
@@ -47,6 +45,13 @@ impl Day13 {
 
         vec
     }
+
+    fn convert_to_grid_and_add_yourself(&self) -> Vec<Vec<i32>> {
+
+
+        todo!()
+    }
+
     fn parse_num(points: &str) -> i32 {
         let points: Vec<&str> = points.split(" ").collect();
         let num: i32 = points[1].parse().unwrap();
@@ -57,157 +62,93 @@ impl Day13 {
             _ => panic!(),
         }
     }
-
-    
-    fn maximize_happiness(&self, grid: &Vec<Vec<i32>>) -> i32 {
-        let mut vec: Vec<Paths> = Vec::new();
-        for i in 0..grid.len() {
-            let mut bitmask = vec![false; grid.len()];
-            bitmask[i] = true; 
-
-            let mut path = Paths::new();
-            path.add(bitmask, 0, i, i);
-            vec.push(path);
-        }
-
-        let mut dists: Vec<i32> = Vec::new(); 
-        for paths in vec.iter_mut() {        
-            dists.push(paths.main_logic(grid));
-        }
-
-        dists.sort();
-        *dists.last().unwrap()
-    }*/
-
 }
-
-/*struct Paths {
-    data: BinaryHeap<Path<i32>>
-}
-impl Paths {
-    fn new(mut bitmask: Vec<bool>, total_dist: i32, current_idx: usize, start_idx: usize) 
-    -> Self {
-        let mut data = BinaryHeap::new();
-        data.push(
-            Path::new(bitmask, total_dist, current_idx, start_idx)
-        );
-        Self { data }
-    }
-
-
-    fn main_logic(&mut self, grid: &Vec<Vec<i32>>) -> i32 {
-        while let Some(path) = self.data.pop() {
-            //checks if bitmask is filled then exit
-            if path.is_bitmask_filled() {
-                return path.total_dist;
-            }
-
-            for (idx, cities_len) in grid[path.current_idx].iter().enumerate() {
-                //checking bitmask
-                if !path.bitmask[idx] {
-                    //adding path with updated bitmask
-                    let bitmask = path.bitmask.clone();
-                    let dist = self.calculate_total_dist(&path, *cities_len, grid);
-
-                    self.add(bitmask, dist, idx, path.start_idx);
-                }
-            }
-        }
-        unreachable!()
-    }
-
-    fn calculate_total_dist(&self, path: &Path<i32>, len: i32, grid: &Vec<Vec<i32>>) -> i32 {
-        let mut dist = path.total_dist;
-        
-        if path.is_bitmask_filled() {
-            dist += grid[path.current_idx][path.start_idx];
-        }
-
-        dist + len
-    }
-
-    fn add(
-        &mut self,
-        mut bitmask: Vec<bool>,
-        total_dist: i32,
-        current_idx: usize,
-        start_idx: usize,
-    ) {
-        bitmask[current_idx] = true;
-
-        self.data.push(Path::new(bitmask, total_dist, current_idx, start_idx));
-    }
-}*/
 
 impl Solution for Day13 {
     fn part1(&self) -> String {
-        //let grid = self.convert_to_grid();
-
-        //let most_happiness = self.maximize_happiness(&grid);
-        let most_happiness = "";
-        most_happiness.to_string()
+        let grid = self.convert_to_grid();
+        let mut paths = PathFinder::new(Day13Path::new());
+        let most_happiness = paths.route(grid, false);        
+        format!("{}", most_happiness)
     }
     fn part2(&self) -> String {
-        format!("")
+        let grid = self.convert_to_grid_and_add_yourself();
+        let mut paths = PathFinder::new(Day13Path::new());
+        let most_happiness = paths.route(grid, false);        
+        format!("{}", most_happiness)
     }
 }
 
-
-
-/*
-#[derive(Eq, PartialEq)]
-pub struct Path<T> {
-    pub bitmask: Vec<bool>,
-    pub total_dist: T,
-    pub current_idx: usize,
-    pub start_idx: usize,
+struct Day13Path {
+    bitmask: Vec<bool>,
+    total_dist: i32,
+    current_idx: usize,
+    initial_idx: usize
 }
 
-impl<T: PartialOrd + Copy + std::fmt::Display> Path<T> {
-    pub fn new(bitmask: Vec<bool>, total_dist: T, current_idx: usize, start_idx: usize) -> Self {
+impl Day13Path {
+    pub fn new() -> Self {
         Self {
-            bitmask,
-            total_dist,
-            current_idx,
-            start_idx,
+            bitmask: vec![],
+            total_dist: 0,
+            current_idx: 0,
+            initial_idx:0,
         }
     }
-    fn is_bitmask_filled(&self) -> bool {
-        for bit in self.bitmask.iter() {
-            if !bit {
-                return false;
+}
+
+impl Path<i32> for Day13Path {
+    fn create_new(&self, mut bitmask: Vec<bool>, idx: usize) -> Box<dyn Path<i32>> {
+        bitmask[idx] = true; 
+        Box::new(
+            Self {
+                bitmask,
+                total_dist: 0,
+                current_idx: idx,
+                initial_idx: idx,
             }
-        }
-        true
-    }
-    #[allow(dead_code)]
-    fn print(&self) {
-        println!(
-            "Path:\nBitmask: {:?}\nTotal dist: {}\nCurrent: {}",
-            self.bitmask, self.total_dist, self.current_idx
         )
     }
-}
+    fn from_existing(&self, path_from: &Box<dyn Path<i32>>, idx: usize, value: i32) -> Box<dyn Path<i32>> {
+        let mut bitmask = path_from.get_bitmask().clone();
+        bitmask[idx] = true; 
 
-impl<T> PartialOrd for Path<T>
-where
-    T: PartialEq + Ord,
-{
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.total_dist.cmp(&other.total_dist))
+        Box::new(
+            Self {
+                bitmask,
+                total_dist: value,
+                current_idx: idx,
+                initial_idx: path_from.get_initial(),
+            }
+        )
     }
-}
+    fn get_total_dist(&self) -> i32 { self.total_dist }
+    fn get_current_idx(&self) -> usize { self.current_idx }
+    fn get_bitmask(&self) -> &Vec<bool> { &self.bitmask }
+    fn get_bitmask_entry(&self, idx:usize) -> Option<&bool> { self.bitmask.get(idx) }
+    fn get_initial(&self) -> usize { self.initial_idx }
+    fn check_fulfillment_criteria(&self) -> bool { !self.bitmask.iter().any(|bit| !(*bit)) }
+    fn calculate_dist(&self, grid: &Vec<Vec<i32>>, idx: usize) -> i32 {
+        let false_bools = self.bitmask.iter()
+        .filter(|bit| !(**bit)).count(); 
+        
+        self.total_dist + grid[self.current_idx][idx] + grid[idx][self.current_idx] + 
+        match false_bools {
+            1  => {
+                grid[idx][self.initial_idx] + grid[self.initial_idx][idx] 
+            },
+            _ => 0
+        }
+    }
+    fn print(&self) {
+        println!("Path:");
+        println!("bitmask: {:?}", self.bitmask);
+        println!("dist: {}", self.total_dist);
+        println!("current_idx: {}", self.current_idx);
+        println!("initial: {}", self.initial_idx);
+        println!();
+    }
 
-impl<T> Ord for Path<T>
-where
-    T: Eq + Ord,
-{
-    fn cmp(&self, other: &Self) -> Ordering {
-        other
-            .total_dist
-            .cmp(&self.total_dist)
-            .then_with(|| self.bitmask.cmp(&other.bitmask))
-    }
 }
 
 #[cfg(test)]
@@ -227,4 +168,3 @@ mod tests {
         assert_eq!(day.part2(), "330".to_string());
     }*/
 }
-*/

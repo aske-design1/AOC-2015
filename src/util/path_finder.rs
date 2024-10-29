@@ -4,13 +4,15 @@ pub trait Path<T>
 where
     T: Ord + Copy + Add<Output = T> + std::fmt::Display + Default,
 {
-    fn create_new(&self, bitmask: Vec<bool>, idx: usize, value: T) -> Box<dyn Path<T>>;
-    fn from_existing(&self, bitmask: Vec<bool>, idx: usize, value: T) -> Box<dyn Path<T>>;
+    fn create_new(&self, bitmask: Vec<bool>, idx: usize) -> Box<dyn Path<T>>;
+    fn from_existing(&self, path_from: &Box<dyn Path<T>>, idx: usize, value: T) -> Box<dyn Path<T>>;
     fn get_total_dist(&self) -> T;
     fn get_current_idx(&self) -> usize;
     fn get_bitmask(&self) -> &Vec<bool>;
-    fn get_bitmask_entry(&self, idx:usize) -> Option<bool>; 
+    fn get_bitmask_entry(&self, idx:usize) -> Option<&bool>; 
+    fn get_initial(&self) -> usize { 0 }
     fn check_fulfillment_criteria(&self) -> bool;
+    fn calculate_dist(&self, grid: &Vec<Vec<T>>, idx: usize) -> T;
     fn print(&self) {}
 }
 
@@ -30,9 +32,8 @@ where
         }
     }
 
-    fn add(&mut self, mut bitmask: Vec<bool>, idx: usize, total_dist: T) {
-        bitmask[idx] = true;
-        let path = self.path_type.from_existing(bitmask, idx, total_dist);
+    fn add(&mut self, path: &Box<dyn Path<T>>, idx: usize, total_dist: T) {
+        let path = self.path_type.from_existing(path, idx, total_dist);
         self.data.push(path);
     }
 
@@ -80,19 +81,15 @@ where
     fn find_path(&mut self, grid: &Vec<Vec<T>>, smallest: bool) -> Box<dyn Path<T>> {
         while let Some(path) = self.data.pop() {
             //checks if bitmask is filled then exit
-            if path.check_fulfillment_criteria() {
-                return path;
-            }
+            if path.check_fulfillment_criteria() { return path }
 
-            for (idx, cities_len) in grid[path.get_current_idx()].iter().enumerate() {
-                //checking bitmask
-                if path.get_bitmask_entry(idx).is_some_and(|val| !val) {
-                    //adding path with updated bitmask
-                    let bitmask = path.get_bitmask().clone();
-                    self.add(bitmask, idx, *cities_len + path.get_total_dist());
-                }
+            //checking bitmask
+            for (idx, _) in grid[path.get_current_idx()].iter().enumerate()
+            .filter(|(idx, _)| path.get_bitmask_entry(*idx).is_some_and(|val| !val)) {
+                //adding path with where bitmask is updated
+                self.add(&path, idx, path.calculate_dist(grid, idx));
             }
-
+            
             //Sort the paths such that the smallest value is first
             self.sort(smallest);
         }
@@ -105,9 +102,8 @@ where
 
         for i in 0..len {
             let path = 
-            self.path_type.create_new(vec![false; len], i, T::default());
+            self.path_type.create_new(vec![false; len], i);
             self.data.push(path);
-
             largest_dist.push(self.find_path(&grid, smallest).get_total_dist());
             self.data.clear()
         }
