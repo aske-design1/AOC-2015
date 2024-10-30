@@ -1,15 +1,15 @@
 use crate::solutions::Solution;
 use std::{fs, io::Read};
 use crate::solutions::{
-    day1, 
-    day2,
-    day3,
-    day4,
-    day5,
-    day6,
-    day7,
-    day8,
-    day9,
+    day01, 
+    day02,
+    day03,
+    day04,
+    day05,
+    day06,
+    day07,
+    day08,
+    day09,
     day10,
     day11,
     day12,
@@ -30,14 +30,14 @@ use crate::solutions::{
 
 fn create_day_object(day_num: u8, input: String) -> Result<Box<dyn Solution>, String> {
     match day_num {
-        1 => Ok(Box::new(day1::Day1::new(input))),
-        2 => Ok(Box::new(day2::Day2::new(&input))),
-        3 => Ok(Box::new(day3::Day3::new(input))),
-        4 => Ok(Box::new(day4::Day4::new(input))),
-        5 => Ok(Box::new(day5::Day5::new(input))),
-        6 => Ok(Box::new(day6::Day6::new(input))),
-        7 => Ok(Box::new(day7::Day7::new(input))),
-        9 => Ok(Box::new(day9::Day9::new(input))),
+        1 => Ok(Box::new(day01::Day1::new(input))),
+        2 => Ok(Box::new(day02::Day2::new(&input))),
+        3 => Ok(Box::new(day03::Day3::new(input))),
+        4 => Ok(Box::new(day04::Day4::new(input))),
+        5 => Ok(Box::new(day05::Day5::new(input))),
+        6 => Ok(Box::new(day06::Day6::new(input))),
+        7 => Ok(Box::new(day07::Day7::new(input))),
+        9 => Ok(Box::new(day09::Day9::new(input))),
         10 => Ok(Box::new(day10::Day10::new(input))),
         11 => Ok(Box::new(day11::Day11::new(input))),
         12 => Ok(Box::new(day12::Day12::new(input))),
@@ -60,7 +60,7 @@ fn create_day_object(day_num: u8, input: String) -> Result<Box<dyn Solution>, St
 
 fn create_day_object_with_bytes(day_num: u8, buffer: Vec<u8>) -> Result<Box<dyn Solution>, String> {
     match day_num {
-        8 => Ok(Box::new(day8::Day8::new(buffer))),
+        8 => Ok(Box::new(day08::Day8::new(buffer))),
         _ => Err("Not a valid day number".to_string())
     }
 }
