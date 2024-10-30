@@ -16,18 +16,29 @@ impl Day13 {
         }
     }
 
-    fn convert_to_grid(&self) -> Vec<Vec<i32>> {
-        let mut indexer = HashMap::new();
+    fn convert_to_grid(&self, hash: Option<HashMap<&str, usize>>) -> Vec<Vec<i32>> {
+        let mut indexer = hash.unwrap_or(HashMap::new());
+        
         for line in self.input.iter() {
-            let name = line.split(" ").collect::<Vec<&str>>()[0];
-
-            let indexer_len = indexer.len();
-            indexer.entry(name).or_insert(indexer_len);
+            Self::add_to_indexer(&mut indexer, line);
         }
 
         let mut vec = vec![vec![0; indexer.len()]; indexer.len()];
         for line in self.input.iter() {
-            let split: Vec<&str> = line.split(" would ").collect();
+            Self::parse_line(&mut vec, line, &indexer);
+        }
+        vec
+    }
+
+    fn add_to_indexer<'a>(indexer: &mut HashMap<&'a str, usize>, line: &'a str) {
+        let name = line.split(" ").collect::<Vec<&str>>()[0];
+
+        let indexer_len = indexer.len();
+        indexer.entry(name).or_insert(indexer_len);
+    }
+
+    fn parse_line(add_to: &mut Vec<Vec<i32>>, line: &str, indexer: &HashMap<&str, usize>) {
+        let split: Vec<&str> = line.split(" would ").collect();
             let name = split[0];
             let split: Vec<&str> = split[1]
                 .split(" happiness units by sitting next to ")
@@ -40,18 +51,8 @@ impl Day13 {
                 indexer.get(name).unwrap(),
                 indexer.get(by_sitting_next_to).unwrap(),
             );
-            vec[idx1][idx2] = num;
-        }
-
-        vec
+            add_to[idx1][idx2] = num;
     }
-
-    fn convert_to_grid_and_add_yourself(&self) -> Vec<Vec<i32>> {
-
-
-        todo!()
-    }
-
     fn parse_num(points: &str) -> i32 {
         let points: Vec<&str> = points.split(" ").collect();
         let num: i32 = points[1].parse().unwrap();
@@ -66,13 +67,16 @@ impl Day13 {
 
 impl Solution for Day13 {
     fn part1(&self) -> String {
-        let grid = self.convert_to_grid();
+        let grid = self.convert_to_grid(None);
         let mut paths = PathFinder::new(Day13Path::new());
         let most_happiness = paths.route(grid, false);        
         format!("{}", most_happiness)
     }
     fn part2(&self) -> String {
-        let grid = self.convert_to_grid_and_add_yourself();
+        let mut hash = HashMap::new();
+        hash.insert("you", 0);
+
+        let grid = self.convert_to_grid(Some(hash));
         let mut paths = PathFinder::new(Day13Path::new());
         let most_happiness = paths.route(grid, false);        
         format!("{}", most_happiness)
@@ -161,10 +165,11 @@ mod tests {
 
         assert_eq!(day.part1(), "330".to_string());
     }
-    /*#[test] fn test2() {
+    #[test] 
+    fn test2() {
         let input = String::from("Alice would gain 54 happiness units by sitting next to Bob.\r\nAlice would lose 79 happiness units by sitting next to Carol.\r\nAlice would lose 2 happiness units by sitting next to David.\r\nBob would gain 83 happiness units by sitting next to Alice.\r\nBob would lose 7 happiness units by sitting next to Carol.\r\nBob would lose 63 happiness units by sitting next to David.\r\nCarol would lose 62 happiness units by sitting next to Alice.\r\nCarol would gain 60 happiness units by sitting next to Bob.\r\nCarol would gain 55 happiness units by sitting next to David.\r\nDavid would gain 46 happiness units by sitting next to Alice.\r\nDavid would lose 7 happiness units by sitting next to Bob.\r\nDavid would gain 41 happiness units by sitting next to Carol.");
         let day = Day13::new(input);
 
         assert_eq!(day.part2(), "330".to_string());
-    }*/
+    }
 }
