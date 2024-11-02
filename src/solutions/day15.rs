@@ -1,3 +1,5 @@
+use std::thread::current;
+
 use super::*;
 
     #[allow(dead_code)]
@@ -40,33 +42,40 @@ use super::*;
         capacity: i64,
         durability: i64,
         flavor: i64,
-        texture: i64
+        texture: i64,
+        calories: i64
     }
     impl Categories {
+        fn new() -> Self {
+            Self {
+                capacity:0,
+                durability:0,
+                flavor:0,
+                texture:0,
+                calories:0,
+            }
+
+        }
         fn calculate_total(&self) -> i64 {
-            self.capacity * self.durability * self.flavor * self.texture
-        } 
-        fn from(&mut self, other: &Categories) {
-            self.capacity = other.capacity;
-            self.durability = other.durability;
-            self.flavor = other.flavor; 
-            self.texture = other.texture;
+            self.capacity.max(0) * self.durability.max(0) * self.flavor.max(0) * self.texture.max(0)
         }
 
         fn add_teaspoons(&mut self, teaspoons: i64, ingredient: &Ingredient) {
             self.capacity += teaspoons * (ingredient.capacity as i64);
             self.durability += teaspoons * (ingredient.durability as i64);
             self.flavor += teaspoons * (ingredient.flavor as i64);
-            self.texture += teaspoons * (ingredient.flavor as i64); 
+            self.texture += teaspoons * (ingredient.texture as i64);
+            self.calories += teaspoons * (ingredient.calories as i64);
         }
 
         #[allow(dead_code)]
         fn print(&self) {
-            println!("Categories {{ Capacity: {}, Durability: {}, Flavor: {}, Texture: {} }}", 
+            println!("Categories {{ Capacity: {}, Durability: {}, Flavor: {}, Texture: {}, calories: {} }}", 
                 self.capacity,
                 self.durability,
                 self.flavor,
-                self.texture
+                self.texture,
+                self.calories
             )
         } 
     }
@@ -108,61 +117,83 @@ use super::*;
             )
         }
 
-        fn calculate_best_cookie(&self) -> i64 {
-            let mut best: i64 = 0; 
-            for teaspoons in 1..100 {
-                let categories = Categories { capacity: 0, durability: 0, flavor: 0, texture: 0 };
-                let categories = self.calculate_best_cookie_helper(teaspoons, 0, categories);
-                best = best.max(categories.calculate_total())
-            }
-            best
-        }
-        fn calculate_best_cookie_helper(&self, teaspoons: i64, ingredient_idx: usize, mut total: Categories) -> Categories {
-            if ingredient_idx+1 == self.input.len() {
-                total.add_teaspoons(100 - teaspoons, &self.input[ingredient_idx]);
-                return total
+        fn calculate_best_cookie(
+            &self, 
+            cumulative_teaspoons: i64, 
+            ingredient_idx: usize, 
+            mut total: Categories,
+            calories_total: Option<i64>
+        ) -> Option<Categories> {
+            if cumulative_teaspoons > 100 {
+                return None
+            } else if ingredient_idx == self.input.len() - 1 {
+                total.add_teaspoons(100 - cumulative_teaspoons, &self.input[ingredient_idx]);
+                
+                return if calories_total.is_some() && total.calories != calories_total.unwrap() {
+                    None
+                } else {
+                    Some(total)
+                }
             }
         
             let mut best_categories = total.clone();
-            best_categories.add_teaspoons(teaspoons, &self.input[ingredient_idx]);
-
             let mut best = total.calculate_total(); 
-            for teaspoons_to_used in 1..100 {
-                let current = self.calculate_best_cookie_helper(
-                    teaspoons_to_used, ingredient_idx + 1, total.clone()
-                );
+            for teaspoons in 1..100 {
+                let mut current = total.clone();
+                current.add_teaspoons(teaspoons, &self.input[ingredient_idx]);
+                
+                //Function returns an option, therefore it is handled.
+                let current = match self.calculate_best_cookie(
+                    cumulative_teaspoons + teaspoons, ingredient_idx + 1, current, calories_total
+                ) {
+                    Some(category) => category, 
+                    None => continue
+                };
+
                 let current_sum = current.calculate_total();
                 if best < current_sum {
                     best = current_sum;
-                    best_categories.from(&current);
-
-
-                    //cur_total.print();
-                    //println!("Teaspoons: {}, Best: {}", teaspoons, best );
+                    best_categories = current.clone();
                 }
             }
 
-            best_categories
+            Some(best_categories)
 
         }
 
     }
 
     impl<'a> Solution for Day15 {
-        fn part1(&self) -> String { self.calculate_best_cookie().to_string() }
-        fn part2(&self) -> String { format!("") } 
+        fn part1(&self) -> String { 
+            self
+            .calculate_best_cookie(0, 0, Categories::new(), None)
+            .unwrap()
+            .calculate_total()
+            .to_string() 
+        }
+        fn part2(&self) -> String { 
+            self
+            .calculate_best_cookie(0, 0, Categories::new(), Some(500))
+            .unwrap()
+            .calculate_total()
+            .to_string()
+        } 
     }
 
     #[cfg(test)]
     mod tests {
         use super::*;
         #[test] fn test1() {
-            //"-1".parse::<i32>().unwrap();
-
             let input = 
             "Butterscotch: capacity -1, durability -2, flavor 6, texture 3, calories 8\nCinnamon: capacity 2, durability 3, flavor -2, texture -1, calories 3";
             let day = Day15::new(input.to_string());
             assert_eq!(day.part1(), 62842880.to_string())
         }
-        //#[test] fn test2() {}
+        #[test] 
+        fn test2() {
+            let input = 
+            "Butterscotch: capacity -1, durability -2, flavor 6, texture 3, calories 8\nCinnamon: capacity 2, durability 3, flavor -2, texture -1, calories 3";
+            let day = Day15::new(input.to_string());
+            assert_eq!(day.part2(), 57600000.to_string())
+        }
     }
