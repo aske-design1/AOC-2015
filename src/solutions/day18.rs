@@ -73,14 +73,14 @@ use super::*;
             let (row_len, col_len) = (grid.len(), grid[y as usize].len());
 
             let points = vec![
-                Point::try_from((x-1, y-1)),//1
-                Point::try_from((x, y-1)),//2
-                Point::try_from((x+1, y-1)),//3
-                Point::try_from((x-1, y)),//4
-                Point::try_from((x+1, y)),//5
-                Point::try_from((x-1, y+1)),//6
-                Point::try_from((x, y+1)),//7
-                Point::try_from((x+1, y+1)),//8
+                Point::try_from((x-1, y-1)), //1
+                Point::try_from((x, y-1)),   //2
+                Point::try_from((x+1, y-1)), //3
+                Point::try_from((x-1, y)),   //4
+                Point::try_from((x+1, y)),   //5
+                Point::try_from((x-1, y+1)), //6
+                Point::try_from((x, y+1)),   //7
+                Point::try_from((x+1, y+1)), //8
             ];
             points.into_iter()
             .filter(|point| point.is_ok() && point.as_ref().unwrap().within_range(col_len, row_len))
