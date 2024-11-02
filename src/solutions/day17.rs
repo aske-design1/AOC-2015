@@ -26,7 +26,6 @@ use super::*;
             Self::compute_combinations_helper(&self.input, goal, 0, 0, 0, &mut accepted);
             accepted.sort();
             accepted.iter().filter(|el| accepted[0] == **el ).count() as u32
-
         }
 
         fn compute_combinations_helper(
