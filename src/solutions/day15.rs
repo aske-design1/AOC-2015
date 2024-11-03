@@ -128,10 +128,8 @@ use super::*;
                 total.add_teaspoons(100 - cumulative_teaspoons, &self.input[ingredient_idx]);
                 
                 return if calories_total.is_some() && total.calories != calories_total.unwrap() {
-                    None
-                } else {
-                    Some(total)
-                }
+                    None 
+                } else { Some(total) }
             }
         
             let mut best_categories = total.clone();

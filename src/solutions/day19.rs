@@ -54,35 +54,27 @@ use super::*;
             }
 
             //println!("string: {}, idx: {idx}", new_dna);
+            println!("{:?}", self.replacements); 
 
             let slice = &self.molecules[idx..idx+1];
-            //println!("{slice}");
-
             //logic
-            if let Some(replacements) =  self.replacements.get(slice) {
+            if let Some(replacements) = self.replacements.get(slice) {
                 for replacement in replacements {
                     let new_dna = new_dna.to_string() + replacement.as_str();
                     self.find_distinct_helper(distinct, idx + 1, new_dna.as_str());
                 }
-
-                return
-            }
-
-            if idx <= self.molecules.len() - 2 { 
+            } else if idx <= self.molecules.len() - 1 && 
+            self.replacements.contains_key(&self.molecules[idx..idx+2]) {
                 let sec_slice = &self.molecules[idx..idx+2];
-                //logic
-                if let Some(replacements) =  self.replacements.get(sec_slice) {
-                    for replacement in replacements {
-                        let new_dna = new_dna.to_string() + replacement.as_str();
-                        self.find_distinct_helper(distinct, idx + 2, new_dna.as_str());
-                    }
-
-                    return
+                let replacements = self.replacements.get(sec_slice).unwrap();
+                for replacement in replacements {
+                    let new_dna = new_dna.to_string() + replacement.as_str();
+                    self.find_distinct_helper(distinct, idx + 2, new_dna.as_str());
                 }
+            } else {
+                let new_dna = new_dna.to_string() + slice;
+                self.find_distinct_helper(distinct, idx + 1, new_dna.as_str())
             }
-            let new_dna = new_dna.to_string() + slice;
-            self.find_distinct_helper(distinct, idx + 1, new_dna.as_str());
-
             
         }
 
