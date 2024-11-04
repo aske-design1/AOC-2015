@@ -1,4 +1,4 @@
-use super::entities::{Stats, Wizard};
+use super::entities::{Boss, Stats, Wizard};
 
 pub struct Item<'a> {
     name: &'a str,
@@ -48,14 +48,15 @@ impl<'a> Item<'a> {
 }
 
 
-pub trait Spell<'a, T: Stats> {
-    //fn new(name: &'a str, mana_cost: u32, active: u32, duration: u32) -> Self;
-
+pub trait Spell {
     fn set_active(&mut self);
     fn get_active(&self) -> u32; 
     fn is_active(&self) -> bool;
     fn get_mana(&self) -> u32;
-    fn do_spell(&mut self, you: &mut Wizard, opp:  &mut T);
+}
+
+pub trait SpellCast<T:Stats>: Spell {
+    fn do_spell(&mut self, you: &mut Wizard, opp: &mut T) {}
 }
 
 pub struct MagicMissile<'a> {
@@ -74,16 +75,18 @@ impl<'a> MagicMissile<'a> {
         }
     }
 }
-impl<'a, T: Stats> Spell<'a, T> for MagicMissile<'a> {
+impl<'a> Spell for MagicMissile<'a> {
     fn set_active(&mut self) {
-        self.active = if self.is_active() {
-            self.active - 1
-        } else { self.duration }
+        self.active = if self.is_active() { self.active - 1 } 
+        else { self.duration }
     }
-    fn get_active(&self) -> u32 {0}
-    fn is_active(&self) -> bool {true}
-    fn get_mana(&self) -> u32 {0}
-    fn do_spell(&mut self, you: &mut Wizard, opp: &mut T) {}
+    fn get_active(&self) -> u32 {self.active}
+    fn is_active(&self) -> bool { self.active != 0 }
+    fn get_mana(&self) -> u32 { self.mana_cost }   
+}
+
+impl<'a> SpellCast<Boss> for MagicMissile<'a> {
+
 }
 
 pub struct Drain<'a> {
@@ -104,7 +107,7 @@ impl<'a> Drain<'a> {
     }
 }
 
-impl<'a, T: Stats> Spell<'a, T> for Drain<'a> {
+impl<'a> Spell for Drain<'a> {
     fn set_active(&mut self) {
         self.active = if self.active != 0 {
             self.active - 1
@@ -113,10 +116,6 @@ impl<'a, T: Stats> Spell<'a, T> for Drain<'a> {
     fn get_active(&self) -> u32 { self.active }
     fn is_active(&self) -> bool { self.active != 0 }
     fn get_mana(&self) -> u32 { self.mana_cost }
-    fn do_spell(&mut self, you: &mut Wizard, opp: &mut T) {
-
-
-    }
 }
 
 pub struct Shield<'a> {
@@ -135,7 +134,7 @@ impl<'a> Shield<'a> {
         }
     }
 }
-impl<'a, T: Stats> Spell<'a, T> for Shield<'a> {
+impl<'a> Spell for Shield<'a> {
     fn set_active(&mut self) {}
     fn get_active(&self) -> u32 {0}
     fn is_active(&self) -> bool {true}

@@ -1,11 +1,5 @@
 use super::object::{
-    Item,
-    MagicMissile,
-    Drain,
-    Shield,
-    Poison,
-    Spell,
-    Recharge
+    Drain, Item, MagicMissile, Poison, Recharge, Shield, Spell, SpellCast
 };
 
 #[derive(Clone)]
@@ -79,7 +73,7 @@ impl<'a> Wizard<'a> {
         true
     }
 
-    pub fn create_basic_spells() -> Vec<Box<dyn Spell<'static, Boss>>> {
+    pub fn create_basic_spells() -> Vec<Box<dyn SpellCast<Boss>>> {
         vec![
             Box::new(MagicMissile::new()),
             Box::new(Drain::new()),
