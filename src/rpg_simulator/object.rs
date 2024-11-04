@@ -82,7 +82,9 @@ impl Spell {
         }
     }
 
-    pub fn activate(&mut self) {}
+    pub fn get_mana_cost(&self) -> u32 { self.mana_cost }
+
+    pub fn activate(&mut self) { self.status_active = self.status_max_time }
 
     pub fn decrease_status(&mut self) {
         if self.is_active() { self.status_active -= 1 }

@@ -70,10 +70,14 @@ impl Wizard {
     }
 
     pub fn win_with_least_mana(&mut self, other: &Boss) -> u32 {
-        let mut least_mana = u32::MAX; 
+        let mut least_mana = u32::MAX;
+        self.spells.sort_by(|a, b| a.get_mana_cost().cmp(&b.get_mana_cost()));
 
-        for spell in self.spells.iter() {
-            let mut you = self.clone();
+        let wiz = self.clone();
+
+
+        for spell in self.spells.iter_mut() {
+            let mut you = wiz.clone();
             let mut opp = other.clone();
             spell.activate();
 
@@ -103,10 +107,9 @@ impl Wizard {
     } else if opp.hit_points == 0 {
         return Some(wiz.mana)
     }
-    let least: Option<u32> = None;
+    let mut least: Option<u32> = None;
 
     let spells = wiz.spells.clone();
-
     for spell in spells.into_iter() {
         spell.cast(&mut wiz, &mut opp); 
     }
@@ -114,7 +117,9 @@ impl Wizard {
 
     if wiz.check_status_effects() {
         if let Some(val) = Self::fight_recursively(wiz.clone(), opp.clone()) {
-            least = val.min(least.map(f))
+            least = least
+            .map(|current_least| val.min(current_least))
+            .or(Some(val));
         }
     }
     
@@ -124,10 +129,6 @@ impl Wizard {
 
         Self::fight_recursively(new_wiz, opp.clone());
     }
-    
-
-    
-
     None
 }
 
