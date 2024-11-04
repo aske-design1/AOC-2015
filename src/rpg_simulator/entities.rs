@@ -1,5 +1,7 @@
+use crate::rpg_simulator::object::SpellType;
+
 use super::object::{
-    Item,
+    Item, Spell,
 };
 
 #[derive(Clone)]
@@ -9,11 +11,14 @@ pub struct SwordPlayer {
     armor: u32,
 }
 
-pub struct Wizard<'a> {
+#[derive(Clone)]
+pub struct Wizard {
     hit_points: u32, 
     mana: u32,
+    spells: Vec<Spell>
 }
 
+#[derive(Clone)]
 pub struct Boss {
     hit_points: u32,
     dmg: u32, 
@@ -55,34 +60,80 @@ impl Boss {
     }
 }
 
-impl<'a> Wizard<'a> {
-    fn new(hit_points: u32, mana: u32, spells: Vec<Box<&dyn Spell>>) -> Self {
+impl Wizard {
+    pub fn new(hit_points: u32, mana: u32) -> Self {
         Self {
             hit_points, 
             mana,
-            spells
+            spells: Spell::create_basic_spells()
         }
     }
 
-    fn battle(&self, other: &impl Stats) -> bool {
-        let mut opp_health = other.get_hit_points(); 
-        
+    pub fn win_with_least_mana(&mut self, other: &Boss) -> u32 {
+        let mut least_mana = u32::MAX; 
 
+        for spell in self.spells.iter() {
+            let mut you = self.clone();
+            let mut opp = other.clone();
+            spell.activate();
 
-        true
+            if let Some(mana) = Self::fight_recursively(you, opp) {
+                least_mana = least_mana.min(mana);
+            }
+        }
+        least_mana
     }
 
-    pub fn create_basic_spells() -> Vec<Box<dyn SpellCast<Boss>>> {
-        vec![
-            Box::new(MagicMissile::new()),
-            Box::new(Drain::new()),
-            Box::new(Shield::new()),
-            Box::new(Poison::new()),
-            Box::new(Recharge::new()),
-        ]
+    fn check_status_effects(&self) -> bool {
+        for spell in self.spells.iter() {
+            if spell.is_active() { return true } 
+        }
+        false
     }
+
+    fn decrease_statuses(&mut self) {
+        for spell in self.spells.iter_mut() {
+            spell.decrease_status();
+        }
+    }
+
+    fn fight_recursively(mut wiz: Wizard, mut opp: Boss) -> Option<u32> {
+    if wiz.hit_points == 0 {
+        return None
+    } else if opp.hit_points == 0 {
+        return Some(wiz.mana)
+    }
+    let least: Option<u32> = None;
+
+    let spells = wiz.spells.clone();
+
+    for spell in spells.into_iter() {
+        spell.cast(&mut wiz, &mut opp); 
+    }
+    wiz.decrease_statuses();
+
+    if wiz.check_status_effects() {
+        if let Some(val) = Self::fight_recursively(wiz.clone(), opp.clone()) {
+            least = val.min(least.map(f))
+        }
+    }
+    
+    for spell_idx in 0..wiz.spells.len() {
+        let mut new_wiz = wiz.clone(); 
+        new_wiz.spells[spell_idx].activate();
+
+        Self::fight_recursively(new_wiz, opp.clone());
+    }
+    
+
+    
+
+    None
+}
+
 
 }
+
 
 pub trait Stats {
     fn get_hit_points(&self) -> u32;
