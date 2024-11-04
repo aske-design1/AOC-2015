@@ -44,37 +44,37 @@ impl Day19 {
 
     fn one_modification(&self) -> usize {
         let mut distinct: HashSet<String> = HashSet::new();
-
         let mut i = 0;
         while i < self.molecules.len() {
+            //Check slice of length 1
             let slice = &self.molecules[i..i + 1];
-            //logic
-            if let Some(replacements) = self.replacements.get(slice) {
-                for replacement in replacements {
-                    distinct.insert(format!("{}{}{}", &self.molecules[..i], replacement, &self.molecules[i+1..]));
-                }
-            } 
-            
-            if i < self.molecules.len() - 1 {
-                let sec_slice = &self.molecules[i..i + 2];
-                if let Some(replacements) = self.replacements.get(sec_slice) {
-                    for replacement in replacements {
-                        distinct.insert(format!("{}{}{}", &self.molecules[..i], replacement, &self.molecules[i+2..]));
-                    }
-                    i+=2;
-                    continue;
-                }
+            self.insert_modification_if_possible(&mut distinct, slice, i);
+
+            //Check slice of length 2
+            if i < self.molecules.len() - 1 
+            && self.insert_modification_if_possible(&mut distinct, &self.molecules[i..i + 2], i) {
+                i+=1;
             } 
 
             i += 1;
         }
-
         distinct.len()
+    }
+
+    fn insert_modification_if_possible(&self, distinct: &mut HashSet<String>, slice: &str, idx: usize) -> bool {
+        if let Some(replacements) = self.replacements.get(slice) {
+            for replacement in replacements {
+                distinct.insert(format!("{}{}{}", &self.molecules[..idx], replacement, &self.molecules[idx+2..]));
+            }
+            true
+        } else { false }
     }
     
     //Idea: Go from molecule -> "e"
     // Potentially doesnt work for all inputs
     fn make_molecule(&self) -> u32 {
+
+        //Sort reverse_replacements by the replacements' length (which is the first element in the tuple)
         let mut reverse_replacements = self.reverse_replacements.clone();
         reverse_replacements.sort_by(|a, b| a.0.len().cmp(&b.0.len()));
 

@@ -12,7 +12,11 @@ use super::*;
     }
 
     impl Solution for Day25 {
-        fn part1(&self) -> String { format!("") }
+        fn part1(&self) -> String {
+            
+
+            format!("") 
+        }
         fn part2(&self) -> String { format!("") } 
     }
 
