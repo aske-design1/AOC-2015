@@ -33,6 +33,7 @@ impl Solution for Day1 {
             Some(i) => format!("{}",i+1),
             None => format!("Error")
         }
+
     } 
 }
 

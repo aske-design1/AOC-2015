@@ -16,17 +16,18 @@ fn main() {
 }
 
 fn print_solution(day: Box<dyn Solution>) {
-    time_solution("1", day.part1().as_str());
-    time_solution("2", day.part2().as_str());
+    let timer = Instant::now();
+    time_solution("1", day.part1().as_str(), timer.elapsed().as_secs_f64());
+    let timer = Instant::now();
+    time_solution("2", day.part2().as_str(), timer.elapsed().as_secs_f64());
 }
 
-fn time_solution(part: &str, solution: &str) {
-    let timer = Instant::now();
+fn time_solution(part: &str, solution: &str, time: f64) {
     match solution {
         "0" | "" => println!("Part {} not implemented", part),
         _ => println!("The solution to part {} is: {}", part, solution),
     }
-    println!("Time it took: {}", timer.elapsed().as_secs_f64());
+    println!("Time it took: {}", time);
 }
 
 /*' Solution Trait must implement 'send' for it to be able to compile
