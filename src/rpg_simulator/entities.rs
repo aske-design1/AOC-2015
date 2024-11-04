@@ -1,5 +1,5 @@
 use super::object::{
-    Drain, Item, MagicMissile, Poison, Recharge, Shield
+    Item,
 };
 
 #[derive(Clone)]
@@ -12,7 +12,6 @@ pub struct SwordPlayer {
 pub struct Wizard<'a> {
     hit_points: u32, 
     mana: u32,
-    spells: Vec<Spell<'a>>
 }
 
 pub struct Boss {
