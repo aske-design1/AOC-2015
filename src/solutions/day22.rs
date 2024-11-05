@@ -1,21 +1,34 @@
 use super::*;
 
-use crate::rpg_simulator::entities::{Boss, Wizard};
+use crate::rpg_simulator::entities::{sword::SwordUser, wizard::Wizard};
 
     #[allow(dead_code)]
     pub struct Day22 {
-        boss: Boss
+        boss: SwordUser
     }
 
     impl Day22 {
         pub fn new(input: String) -> Self {
-            Self { boss: Boss::new(&input) }
+            Self { boss: SwordUser::new_from_input(&input) }
+        }
+
+
+        fn battle(you: Wizard, boss: SwordUser) -> u32 {
+            let mut least_mana = u32::MAX; 
+
+            //Queue and insert
+
+
+            //Main loop that gathers a prev recorded wizard
+
+
+            least_mana
         }
     }
 
     impl Solution for Day22 {
         fn part1(&self) -> String { 
-            Wizard::new(100, 500).win_with_least_mana(&self.boss).to_string()
+            Self::battle(Wizard::new(50, 500), self.boss.clone()).to_string()
         }
         fn part2(&self) -> String { format!("") } 
     }
