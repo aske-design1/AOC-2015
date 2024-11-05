@@ -1,5 +1,4 @@
-use super::entities;
-
+use super::entity::*;
 
 pub struct Item<'a> {
     name: &'a str,
@@ -49,36 +48,40 @@ impl<'a> Item<'a> {
 }
 
 
-
-
-
-/*
-pub struct Drain<'a> {
-    name: &'a str,
-    mana_cost: u32, 
-    active: u32,
-    duration: u32 
+#[derive(Clone, PartialEq, Debug)]
+pub enum SpellType {
+    MagicMissile,
+    Drain,
+    Shield,
+    Poison,
+    Recharge
 }
 
-pub struct Shield<'a> {
-    name: &'a str,
-    mana_cost: u32, 
-    active: u32,
-    duration: u32 
-}
+#[derive(Clone)]
+pub struct Spell(pub SpellType, pub u32); 
 
+impl Spell {
+    pub fn new(spell_type: &SpellType) -> Option<Self> {
+        let spell_type = spell_type.clone();
+        match spell_type {
+            SpellType::Shield | SpellType::Poison => Some(Self(spell_type, 6)),
+            SpellType::Recharge => Some(Self(spell_type, 5)),
+            _ => None
+        }
+    }
 
-pub struct Poison<'a> {
-    name: &'a str,
-    mana_cost: u32, 
-    active: u32,
-    duration: u32 
-}
+    pub fn passives(&mut self, you: &mut Entity, boss: &mut Entity) {
+        //if !self.is_active() { return }
+        self.1 -= 1;
 
-pub struct Recharge<'a> {
-    name: &'a str,
-    mana_cost: u32, 
-    active: u32,
-    duration: u32 
+        match self.0 {
+            SpellType::Shield => {
+                if self.1 == 0 { you.armor -= 7; }
+            },
+            SpellType::Poison => boss.life_points = boss.life_points.saturating_sub(3),
+            SpellType::Recharge => you.mana += 101,
+            _ => unreachable!()
+        }
+    }
+    pub fn is_active(&self) -> bool { self.1 > 0 }
 }
-*/

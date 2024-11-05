@@ -1,2 +1,2 @@
-pub mod entities;
-pub mod object;
+pub mod entity;
+pub mod items;

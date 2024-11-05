@@ -1,16 +1,15 @@
-use super::super::object::{
-    Item
-};
+use super::items::*;
 
 #[derive(Clone)]
 pub struct Entity {
-    life_points: u32,
-    dmg: u32, 
-    armor: u32,
-    mana: u32
+    pub life_points: u32,
+    pub dmg: u32, 
+    pub armor: u32,
+    pub mana: u32
 }
 
 
+/**** Day 21 *****/
 impl Entity {
     pub fn new(life_points: u32, dmg:u32, armor:u32) -> Self {
         Self { 
@@ -18,15 +17,6 @@ impl Entity {
             dmg,
             armor,
             mana:0
-        }
-    }
-
-    pub fn new_with_mana(life_points: u32, mana: u32) -> Self {
-        Self {
-            life_points,
-            mana,
-            dmg:0,
-            armor:0,
         }
     }
 
@@ -50,14 +40,8 @@ impl Entity {
             }
         }
 
-        Self { life_points: hit_points, dmg, armor }
+        Self { life_points: hit_points, dmg, armor, mana:0 }
     }
-
-    
-
-    pub fn is_alive(&self) -> bool {
-        self.life_points != 0
-    } 
 }
 
 
@@ -89,6 +73,59 @@ pub trait Battle: Stats {
 }
 
 impl Battle for Entity {}
+
+
+/*****  Day 22 ******/
+impl Entity {
+    pub fn new_with_mana(life_points:u32, mana:u32) -> Self {
+        Self {
+            life_points,
+            armor: 0,
+            dmg:0,
+            mana
+        }
+    }
+
+    pub fn is_alive(&self) -> bool {
+        self.life_points != 0
+    } 
+
+    pub fn attack(&mut self, other: &mut Self) {
+        let attack_dmg = match self.dmg.saturating_sub(other.armor) {
+            0 => 1,
+            dmg => dmg 
+        };
+        other.life_points = other.life_points.saturating_sub(attack_dmg)
+    }
+    
+
+    pub fn cast(&mut self, spell_type: &SpellType, boss: &mut Self) -> Option<(Option<Spell>, u32)> {
+        let cost = match spell_type {
+            SpellType::MagicMissile => {
+                boss.life_points = boss.life_points.saturating_sub(4);
+                53
+            },
+            SpellType::Drain => {
+                self.life_points += 2;
+                boss.life_points = boss.life_points.saturating_sub(2);
+                73
+            },
+            SpellType::Shield => {
+                self.armor += 7;
+                113
+            },
+            SpellType::Poison => 173,
+            SpellType::Recharge => 229,
+        };
+
+        if cost > self.mana { return None }
+
+        self.mana -= cost;
+        Some((Spell::new(spell_type), cost))
+    }
+
+}
+
 
 
 
