@@ -3,28 +3,33 @@ use super::super::object::{
 };
 
 #[derive(Clone)]
-pub struct SwordUser {
-    hit_points: u32,
+pub struct Entity {
+    life_points: u32,
     dmg: u32, 
     armor: u32,
+    mana: u32
 }
 
 
-#[derive(Clone)]
-pub struct Boss {
-    hit_points: u32,
-    dmg: u32, 
-    armor: u32,
-}
-
-impl SwordUser {
-    pub fn new(hit_points: u32, dmg:u32, armor:u32) -> Self {
+impl Entity {
+    pub fn new(life_points: u32, dmg:u32, armor:u32) -> Self {
         Self { 
-            hit_points,
+            life_points,
             dmg,
             armor,
+            mana:0
         }
     }
+
+    pub fn new_with_mana(life_points: u32, mana: u32) -> Self {
+        Self {
+            life_points,
+            mana,
+            dmg:0,
+            armor:0,
+        }
+    }
+
     pub fn add_stats(&mut self, item: &Item) {
         self.dmg += item.get_dmg();
         self.armor += item.get_armor();
@@ -45,10 +50,16 @@ impl SwordUser {
             }
         }
 
-        Self { hit_points, dmg, armor }
+        Self { life_points: hit_points, dmg, armor }
     }
 
+    
+
+    pub fn is_alive(&self) -> bool {
+        self.life_points != 0
+    } 
 }
+
 
 pub trait Stats {
     fn get_hit_points(&self) -> u32;
@@ -57,11 +68,11 @@ pub trait Stats {
     fn take_damage(&mut self, dmg: u32);
 }
 
-impl Stats for SwordUser { 
-    fn get_hit_points(&self) -> u32 { self.hit_points }
+impl Stats for Entity { 
+    fn get_hit_points(&self) -> u32 { self.life_points }
     fn get_dmg(&self) -> u32 { self.dmg }
     fn get_armor(&self) -> u32 { self.armor }
-    fn take_damage(&mut self, dmg: u32) { self.hit_points = 0.max(self.hit_points as i32 - dmg as i32) as u32; }
+    fn take_damage(&mut self, dmg: u32) { self.life_points = 0.max(self.life_points as i32 - dmg as i32) as u32; }
 }
 
 pub trait Battle: Stats {
@@ -77,7 +88,7 @@ pub trait Battle: Stats {
     }
 }
 
-impl Battle for SwordUser {}
+impl Battle for Entity {}
 
 
 
@@ -86,8 +97,8 @@ mod tests {
     use super::*;
     #[test] 
     fn test_battle_logic() {
-        let you = SwordUser::new(8, 5, 5);
-        let opp = SwordUser::new(12, 7, 2);
+        let you = Entity::new(8, 5, 5);
+        let opp = Entity::new(12, 7, 2);
 
         assert!(you.battle(&opp))
     }

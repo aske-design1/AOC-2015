@@ -1,4 +1,4 @@
-use super::sword::{Stats, SwordUser};
+use super::sword::{Stats, Entity};
 
 
 #[derive(Clone)]
@@ -18,7 +18,7 @@ impl Wizard {
         }
     }
 
-    pub fn win_with_least_mana(&self, other: &SwordUser) -> u32 {
+    pub fn win_with_least_mana(&self, other: &Entity) -> u32 {
         let mut least_mana = u32::MAX;
 
         //Spells will be independent of wizard as they need the wizard to do operations on 
@@ -49,7 +49,7 @@ impl Wizard {
         false
     }
 
-    fn fight_recursively(mut wiz: Wizard, mut opp: SwordUser) -> Option<u32> {
+    fn fight_recursively(mut wiz: Wizard, mut opp: Entity) -> Option<u32> {
         if wiz.hit_points == 0 {
             return None
         } else if opp.get_hit_points() == 0 {
@@ -227,12 +227,12 @@ impl Spell {
 
 #[cfg(test)]
 mod tests {
-    use crate::rpg_simulator::entities::sword::SwordUser;
+    use crate::rpg_simulator::entities::sword::Entity;
 
     use super::*;
     #[test] 
     fn test_wizard_battle_logic() {
-        let opp = SwordUser::new(13, 8, 0);
+        let opp = Entity::new(13, 8, 0);
         let wizard = Wizard::new(10, 250);
 
         assert_eq!(236, wizard.win_with_least_mana(&opp));
