@@ -41,19 +41,6 @@ impl Day25 {
     fn calculate_code(code: u64) -> u64 {
         (code * 252533) % 33554393 
     }
-    /*fn find_iterations(row: usize, col: usize) -> usize {
-        let mut iterations = 1usize;
-
-        /*let (lowest, largest) = if row >= col {
-            (col, row)
-        } else { (row, col) };*/
-
-        for i in 1..row { iterations += i  }
-        for i in 1..col { iterations += row + i }
-        
-
-        iterations
-    }*/
     
 }
 
@@ -82,30 +69,5 @@ mod tests {
     fn part_one_2_1() {
         let day = Day25::new_test(2, 1);
         assert_eq!(day.part1(), 31916031.to_string())
-    }
-
-    #[test] 
-    fn test_iterations() {
-        /*assert_eq!(Day25::find_iterations(1,1), 1);
-        assert_eq!(Day25::find_iterations(2,1), 2);
-        assert_eq!(Day25::find_iterations(1,2), 3);
-        assert_eq!(Day25::find_iterations(3,1), 4);
-        assert_eq!(Day25::find_iterations(2,2), 5);
-        assert_eq!(Day25::find_iterations(1,3), 6);
-        assert_eq!(Day25::find_iterations(4,1), 7);
-        assert_eq!(Day25::find_iterations(3,2), 8);
-        assert_eq!(Day25::find_iterations(2,3), 9);
-        assert_eq!(Day25::find_iterations(1,4), 10);
-        assert_eq!(Day25::find_iterations(5,1), 11);
-        assert_eq!(Day25::find_iterations(4,2), 12);
-        assert_eq!(Day25::find_iterations(3,3), 13);
-        assert_eq!(Day25::find_iterations(2,4), 14);
-        assert_eq!(Day25::find_iterations(1,5), 15);
-        assert_eq!(Day25::find_iterations(6,1), 16);
-        assert_eq!(Day25::find_iterations(5,2), 17);
-        assert_eq!(Day25::find_iterations(4,3), 18);
-        assert_eq!(Day25::find_iterations(3,4), 19);
-        assert_eq!(Day25::find_iterations(2,5), 20);
-        assert_eq!(Day25::find_iterations(1,6), 21);*/
     }
 }

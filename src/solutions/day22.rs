@@ -108,10 +108,18 @@ impl Day22 {
 
 impl Solution for Day22 {
     fn part1(&self) -> String { 
-        Self::battle(Entity::new_with_mana(50, 500), self.boss.clone(), false).to_string()
+        Self::battle(
+            Entity::new_with_mana(50, 500),
+            self.boss.clone(), 
+            false
+        ).to_string()
     }
     fn part2(&self) -> String { 
-        Self::battle(Entity::new_with_mana(50, 500), self.boss.clone(), true).to_string() 
+        Self::battle(
+            Entity::new_with_mana(50, 500), 
+            self.boss.clone(), 
+            true
+        ).to_string() 
     } 
 }
 

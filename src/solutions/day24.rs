@@ -20,7 +20,7 @@ impl Day24 {
             total_sum
         }
     }
-
+    #[allow(dead_code)]
     fn new_test(weights: Vec<u32>) -> Self {
         let total_sum = weights.iter().sum::<u32>();
         Self { 
@@ -30,9 +30,7 @@ impl Day24 {
     }
 
     fn main_logic(&self, groups: u32) -> u64 {
-        let mut sorted_arr = self.weights.clone();
-        //sorted_arr.sort_by(|a,b| b.cmp(&a));
-
+        let sorted_arr = self.weights.clone();
         let mut min_heap:BinaryHeap<Reverse<(usize, Vec<u64>)>> = BinaryHeap::new();
 
         Self::helper(&sorted_arr, &mut min_heap, &(self.total_sum / groups), Vec::new(), 0);
@@ -41,10 +39,7 @@ impl Day24 {
 
         let mut smallest_quan: u64 = tuple.1.iter().product();
 
-        //  println!("{:?} and dist {}, collective {}", tuple.1, self.distribution, self.weights.iter().sum::<u32>());
-
         while let Some(Reverse(el)) = min_heap.pop() {
-            //println!("{} {}", tuple.0, el.0);
             let quantam = el.1.iter().product::<u64>();
             if tuple.0 != el.0 {
                 break; 
@@ -52,9 +47,6 @@ impl Day24 {
                 smallest_quan = quantam;
             }
         }
-
-        //println!("{:?} and dist {}, collective {}", tuple.1, self.distribution, self.weights.iter().sum::<u32>());
-
         smallest_quan
     }
 
