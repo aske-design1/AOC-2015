@@ -21,11 +21,11 @@ use super::*;
             Self { input: input.split(splitter).map(|line| line.to_string()).collect::<Vec<String>>() }
         }
 
-        fn distance_of_reindeer(reindeer: Reindeer, amount_of_sec: u64) -> u64 {
+        fn distance_of_reindeer(reindeer: &Reindeer, amount_of_sec: u64) -> u64 {
             let cycle_length = reindeer.active + reindeer.rest_time; 
             let cycle_amount = amount_of_sec / cycle_length;
             
-            //First part is distanced gained from every full cycle 
+            //First part is distance gained from every full cycle 
             //and last is how much of active is caught
             reindeer.speed * reindeer.active * cycle_amount + 
             reindeer.speed * std::cmp::min(amount_of_sec - (cycle_amount * cycle_length), reindeer.active)  
@@ -43,23 +43,25 @@ use super::*;
             let mut scores: Vec<u64> = vec![0; reindeers.len()];
             for i in 1..amount_of_sec {
                 let sec = i as u64;
-                let mut score_at_sec: Box<Vec<(u64, usize)>> = Box::new(Vec::new());
+                let mut score_at_sec: Vec<(u64, usize)> = Vec::new();
 
                 for (idx, reindeer) in reindeers.iter().enumerate() {
                     //at .0 distance, at .1 index 
-                    score_at_sec.push((Self::distance_of_reindeer(reindeer.clone(), sec), idx));
+                    score_at_sec.push((Self::distance_of_reindeer(reindeer, sec), idx));
                 }
                 //Reversed sorting such that largest is 1st
                 score_at_sec.sort_by(|a, b| b.0.cmp(&a.0));
                 let winner = score_at_sec.first().unwrap(); 
                 scores[winner.1] += 1; 
 
-                let mut i = 1;
-                while let Some(score) = score_at_sec.get(i) {
-                    if winner.0 != score.0 { break }
-                    scores[score.1] += 1; 
-                    i+=1; 
-                }
+                score_at_sec.iter().skip(1).try_for_each(|(speed, score)| {
+                    use std::ops::ControlFlow::{Break,Continue};
+                    if winner.0 != *speed { Break(()) } 
+                    else {
+                        scores[*score] += 1; 
+                        Continue(())
+                    }
+                });
             }
             scores.sort();
             *scores.last().unwrap()
@@ -69,17 +71,15 @@ use super::*;
 
     impl Solution for Day14 {
         fn part1(&self) -> String { 
-            let mut max_dist:u64 = 0;
-            for line in self.input.iter() {
+            self.input.iter().fold(0, |max_dist, line|{
                 let reindeer = Self::parse_line(line);
-                let dist = Self::distance_of_reindeer(reindeer, 2503);
-                max_dist = std::cmp::max(dist, max_dist);
-            }
-            max_dist.to_string() 
+                let dist = Self::distance_of_reindeer(&reindeer, 2503);
+                max_dist.max(dist)
+            }).to_string()
         }
+
         fn part2(&self) -> String { 
-            let reindeer_vec = 
-            self.input.iter().map(|line| Self::parse_line(line)).collect::<Vec<Reindeer>>();
+            let reindeer_vec = self.input.iter().map(|line| Self::parse_line(line)).collect::<Vec<_>>();
 
             Self::new_rules(reindeer_vec, 2503).to_string()     
         } 

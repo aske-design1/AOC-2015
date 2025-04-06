@@ -38,43 +38,65 @@ use super::*;
         }
 
         fn check_aunt(aunt: &Aunt, criteria: &Aunt) -> bool {
-            Self::check_field(aunt.children, criteria.children.unwrap()) &&
-            Self::check_field(aunt.cats, criteria.cats.unwrap()) &&
-            Self::check_field(aunt.samoyeds, criteria.samoyeds.unwrap()) &&
-            Self::check_field(aunt.pomeranians, criteria.pomeranians.unwrap()) &&
-            Self::check_field(aunt.akitas, criteria.akitas.unwrap()) &&
-            Self::check_field(aunt.vizslas, criteria.vizslas.unwrap()) &&
-            Self::check_field(aunt.goldfish, criteria.goldfish.unwrap()) &&
-            Self::check_field(aunt.trees, criteria.trees.unwrap()) &&
-            Self::check_field(aunt.cars, criteria.cars.unwrap()) &&
-            Self::check_field(aunt.perfumes, criteria.perfumes.unwrap())
+            aunt.create_iter().zip(criteria.create_iter()).all(|(aunt, criteria)| {
+                Self::check_field(aunt, criteria)
+            })
+            /*Self::check_field(aunt.children, criteria.children) &&
+            Self::check_field(aunt.cats, criteria.cats) &&
+            Self::check_field(aunt.samoyeds, criteria.samoyeds) &&
+            Self::check_field(aunt.pomeranians, criteria.pomeranians) &&
+            Self::check_field(aunt.akitas, criteria.akitas) &&
+            Self::check_field(aunt.vizslas, criteria.vizslas) &&
+            Self::check_field(aunt.goldfish, criteria.goldfish) &&
+            Self::check_field(aunt.trees, criteria.trees) &&
+            Self::check_field(aunt.cars, criteria.cars) &&
+            Self::check_field(aunt.perfumes, criteria.perfumes)*/
         }
         fn check_aunt_with_ranges(aunt: &Aunt, criteria: &Aunt) -> bool {
-            Self::check_field(aunt.children, criteria.children.unwrap()) &&
-            Self::check_range(aunt.cats, criteria.cats.unwrap(), true) &&
-            Self::check_field(aunt.samoyeds, criteria.samoyeds.unwrap()) &&
-            Self::check_range(aunt.pomeranians, criteria.pomeranians.unwrap(), false) &&
-            Self::check_field(aunt.akitas, criteria.akitas.unwrap()) &&
-            Self::check_field(aunt.vizslas, criteria.vizslas.unwrap()) &&
-            Self::check_range(aunt.goldfish, criteria.goldfish.unwrap(), false) &&
-            Self::check_range(aunt.trees, criteria.trees.unwrap(), true) &&
-            Self::check_field(aunt.cars, criteria.cars.unwrap()) &&
-            Self::check_field(aunt.perfumes, criteria.perfumes.unwrap())
+            let (a_field, a_range) = aunt.create_range_iter_and_iter();
+            let (c_field, c_range) = criteria.create_range_iter_and_iter();
+
+            a_field.zip(c_field).all(|(aunt, criteria)| {
+                Self::check_field(aunt, criteria)
+            }) && a_range.zip(c_range).all(|((aunt, gt), (criteria, _))| {
+                Self::check_range(aunt, criteria, gt) 
+            })
+
+            /*Self::check_field(aunt.children, criteria.children) &&
+            Self::check_range(aunt.cats, criteria.cats, true) &&
+            Self::check_field(aunt.samoyeds, criteria.samoyeds) &&
+            Self::check_range(aunt.pomeranians, criteria.pomeranians, false) &&
+            Self::check_field(aunt.akitas, criteria.akitas) &&
+            Self::check_field(aunt.vizslas, criteria.vizslas) &&
+            Self::check_range(aunt.goldfish, criteria.goldfish, false) &&
+            Self::check_range(aunt.trees, criteria.trees, true) &&
+            Self::check_field(aunt.cars, criteria.cars) &&
+            Self::check_field(aunt.perfumes, criteria.perfumes)*/
         }
 
-        fn check_field(aunt_field: Option<u32>, criteria_field: u32) -> bool {
-            if let Some(field) = aunt_field { field == criteria_field } 
-            else { true }
+        fn check_field(aunt_field: Option<u32>, criteria_field: Option<u32>) -> bool {
+            match (aunt_field, criteria_field) {
+                (Some(aunt), Some(criteria)) => aunt == criteria,
+                (_, _) => true,
+            }
+
+            /*if let Some(field) = aunt_field { field == criteria_field } 
+            else { true }*/
         }
                 
-        fn check_range(aunt_field: Option<u32>, criteria_field: u32, greater_than: bool) -> bool {
-            if let Some(field) = aunt_field { 
+        fn check_range(aunt_field: Option<u32>, criteria_field: Option<u32>, greater_than: bool) -> bool {
+            match (aunt_field, criteria_field) {
+                (Some(aunt), Some(criteria)) => greater_than && aunt > criteria || aunt < criteria,
+                (_, _) => true
+            }
+
+            /*if let Some(field) = aunt_field { 
                 match greater_than {
                     true => field > criteria_field,
                     false => field < criteria_field
                 }
             } 
-            else { true }
+            else { true }*/
         }
 
 
@@ -109,6 +131,17 @@ use super::*;
                 perfumes: hash.get("perfumes").copied(),
             }
         }
+        fn create_iter(&self) -> impl Iterator<Item = Option<u32>> {
+            vec![self.children, self.cats, self.samoyeds, self.pomeranians, self.akitas, self.vizslas, self.goldfish, self.trees, self.cars, self.perfumes].into_iter()
+        }
+        fn create_range_iter_and_iter(&self) -> (impl Iterator<Item = Option<u32>>, impl Iterator<Item = (Option<u32>, bool)>) {
+            ( 
+                vec![self.children,  self.samoyeds,  self.akitas, self.vizslas,  self.cars, self.perfumes].into_iter(), 
+                vec![(self.cats, true), (self.pomeranians, false), (self.goldfish, false), (self.trees, true)].into_iter()
+            )
+        }
+
+
     }
 
     impl Solution for Day16 {

@@ -84,27 +84,22 @@ use super::*;
             let input = 
             input
             .split(splitter)
-            .map(|line| Self::parse_line(line))
+            .map(Self::parse_line)
             .collect::<Vec<Ingredient>>();
 
             Self { input }
         }
 
         fn parse_line(line: &str) -> Ingredient {
-            let first_split = line.split(": ").collect::<Vec<&str>>();
-            let name = first_split[0].to_string();
-            let ingredients = first_split[1].split(", ").collect::<Vec<&str>>();
+            let (name, ingredients) = line.split_once(": ").unzip();
+            
+            let name = name.unwrap().to_string();
+            let processed_ingredients = ingredients
+            .unwrap()
+            .split(", ").into_iter()
+            .map(|ingredient| ingredient.split_once(" ").unwrap().1.parse::<i32>().unwrap())
+            .collect::<Vec<_>>();
 
-            let mut processed_ingredients: Vec<i32> = Vec::new();
-            for ingredient in ingredients.into_iter() {
-                processed_ingredients.push(
-                    ingredient
-                    .split(" ")
-                    .collect::<Vec<&str>>()[1]
-                    .parse::<i32>()
-                    .unwrap()
-                );
-            }
             Ingredient::new(
                 name, 
                 processed_ingredients[0], 
@@ -122,14 +117,14 @@ use super::*;
             mut total: Categories,
             calories_total: Option<i64>
         ) -> Option<Categories> {
+            
             if cumulative_teaspoons > 100 {
                 return None
             } else if ingredient_idx == self.input.len() - 1 {
                 total.add_teaspoons(100 - cumulative_teaspoons, &self.input[ingredient_idx]);
                 
-                return if calories_total.is_some() && total.calories != calories_total.unwrap() {
-                    None 
-                } else { Some(total) }
+                return if calories_total.is_some_and(|cal| total.calories != cal) { None  } 
+                else { Some(total) }
             }
         
             let mut best_categories = total.clone();
@@ -149,7 +144,7 @@ use super::*;
                 let current_sum = current.calculate_total();
                 if best < current_sum {
                     best = current_sum;
-                    best_categories = current.clone();
+                    best_categories = current;
                 }
             }
 

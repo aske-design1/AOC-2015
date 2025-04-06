@@ -1,3 +1,5 @@
+use itertools::Itertools;
+
 use super::*;
 
 #[allow(dead_code)]
@@ -14,42 +16,41 @@ impl Day11 {
 pub struct Password(Vec<u8>);
 impl Password {
     fn new(password: Vec<u8>) -> Self { Password(password) }
-    fn increment(&mut self, idx: usize) {
-        if let Some(val) = self.0.get_mut(idx) {
+    fn increment(&mut self) { self.increment_idx(self.get_last()); }
+    
+    fn increment_idx(&mut self, idx: usize) {
+        use std::ops::ControlFlow::{Break,Continue};
+        (0..=idx).rev().try_for_each(|idx| {
+            let val = &mut self.0[idx];
             *val = (((*val - b'a') + 1) % 26) + b'a';
-            if *val == b'a' {
-                self.increment(idx - 1);
+            if *val != b'a' {
+                Break(()) 
+            } else {
+                Continue(())
             }
-        }
+        });
     }
-    fn new_password(&mut self) {
+
+    fn increment_builder(mut self) -> Self { self.increment_idx(self.get_last()); self }
+
+    fn new_password(mut self) -> Self {
         while !self.is_accepted() {
             self.check_forbidden_chars();
-            self.increment(self.get_last());
+            self.increment();
         }
+        self
     }
     fn get_last(&self) -> usize { self.0.len() - 1 }
 
     fn check_forbidden_chars(&mut self) {
-        let mut found = false;
-        for i in 0..self.0.len() {
-            if found {
-                self.0[i] = b'a'; 
-            } else if self.0[i] == b'i' || self.0[i] == b'o' || self.0[i] == b'l' {
-                self.increment(i);
-                found = true; 
-            }
+        if let Some(idx) = self.0.iter().position(|val| *val == b'i' ||  *val == b'o' || *val == b'l') {
+            self.increment_idx(idx);
+            self.0[idx + 1..].iter_mut().for_each(|c| *c = b'a');
         }
     }
 
     fn check_consecutive(&self, idx:usize) -> bool {
-        if idx < 2 { return false } 
-        
-        let val1 = self.0[idx - 2];
-        let val2 = self.0[idx - 1];
-        let val3 = self.0[idx];
-
-        val1 + 2 == val3 && val2 + 1 == val3
+        self.0[idx.saturating_sub(2)..=idx].iter().tuple_windows().any(|(val1,val2,val3)| *val1 +1 == *val2 && *val2 + 1 == *val3)
     }
 
     fn is_accepted(&self) -> bool {
@@ -65,10 +66,7 @@ impl Password {
             }
 
             // Requirement 2: Check for forbidden characters `i`, `o`, `l`
-            match self.0[i] {
-                b'i' | b'o' | b'l' => return false,
-                _ => (),
-            };
+            if [b'i', b'o', b'l'].contains(&self.0[i]) { return false }
 
             // Requirement 3: Check for two consecutive equal characters
             // Only count this pair if it doesn’t overlap with the previous counted pair
@@ -82,9 +80,7 @@ impl Password {
         two_consecutive >= 2 && three_consecutive
     }
 
-    fn get_password<'a>(&'a self) -> &'a Vec<u8> {
-        &self.0
-    }
+    fn get_password<'a>(&'a self) -> &'a Vec<u8> { &self.0 }
 
 }
 
@@ -92,16 +88,11 @@ impl Password {
 impl Solution for Day11 {
     fn part1(&self) -> String { 
         //Interval 97-122
-        let mut password = Password::new(self.input.clone().as_bytes().to_vec());
-        password.new_password();
-        format!("{}", String::from_utf8(password.get_password().to_vec()).unwrap()) 
+        let psword = Password::new(self.input.clone().as_bytes().to_vec()).new_password();
+        format!("{}", String::from_utf8(psword.get_password().to_vec()).unwrap()) 
     }
     fn part2(&self) -> String { 
-        let mut password = Password::new(self.input.clone().as_bytes().to_vec());
-        password.new_password();
-        password.increment(password.get_last());
-        password.new_password();
-
+        let password = Password::new(self.input.clone().as_bytes().to_vec()).new_password().increment_builder().new_password();
         format!("{}", String::from_utf8(password.get_password().to_vec()).unwrap()) 
     } 
 }
