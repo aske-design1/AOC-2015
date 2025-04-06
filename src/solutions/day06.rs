@@ -49,6 +49,7 @@ impl Day6 {
             "turn off" => |_| 0,
             _ => panic!("Error: invalid input")
         };
+
         for i in instructs.row.0..=instructs.row.1 {
             for j in instructs.col.0..=instructs.col.1 {
                 lights[i][j] = op(lights[i][j])

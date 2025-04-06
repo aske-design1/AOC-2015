@@ -50,7 +50,7 @@ impl Entity {
             }
         }
 
-        Self { life_points: hit_points, dmg, armor }
+        Self { life_points: hit_points, dmg, armor, mana:0 }
     }
 
     

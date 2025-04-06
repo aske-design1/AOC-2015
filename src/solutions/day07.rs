@@ -7,21 +7,115 @@ pub struct Day7 {
 }
 
 struct Gate<'a> {
-    operation: fn(Option<u16>, Option<u16>) -> u16,
-    first_var: Option<u16>,
-    sec_var: Option<u16>,
+    operation: fn((Option<u16>, Option<u16>)) -> u16,
+    values: (Option<u16>, Option<u16>),
     key: &'a str
 }
 
 impl<'a> Gate<'a> {
-    fn new(operation: fn(Option<u16>, Option<u16>) -> u16, key: &'a str ) -> Self {
+    fn new(operation: &Operation, key: &'a str ) -> Self {
+        let operation: fn((Option<u16>, Option<u16>)) -> u16 = match operation {
+            //Closures that take elements depending on its bit-operation
+            Operation::And => |(a, b)| a.zip(b).map(|(a,b)| a & b).unwrap_or_else(|| panic!("Missing operand for AND")),
+            Operation::Or => |(a, b)| a.zip(b).map(|(a,b)| a | b).unwrap_or_else(|| panic!("Missing operand for OR")),
+            Operation::LSHIFT => |(a, b)| a.zip(b).map(|(a, b)| a << b).unwrap_or_else(|| panic!("Missing operand for LSHIFT")),
+            Operation::RSHIFT => |(a, b)| a.zip(b).map(|(a, b)| a >> b).unwrap_or_else(|| panic!("Missing operand for RSHIFT")),
+            Operation::Not => |(a, _)| a.map(|val| !val).unwrap_or_else(|| panic!("Missing operand for NOT")),
+            Operation::Assign => |(a, _)| a.unwrap_or_else(|| panic!("Missing operand to unwrap")),
+        }; 
+        
         Self {
             operation,
-            first_var:None, 
-            sec_var: None, 
+            values: (None, None), 
             key
         }
     }
+
+    fn execute_op(&self) -> u16 {
+        (self.operation)(self.values)
+    }
+
+    fn update_values(&mut self, wires: &HashMap<&'a str, u16>, ops: &str, operation: &Operation) {
+        match operation {
+            Operation::Not => {
+                let val = ops.split("NOT ").collect::<Vec<_>>()[1];
+                self.values = match wires.get(val) {
+                    Some(var) => (Some(*var), None),
+                    None => return,
+                };
+
+            },
+            Operation::Assign => {
+                //if a variable is given and not a number, this is handled here
+                self.values = match wires.get(&ops) {
+                    None if ops.chars().any(|ch| ch.is_digit(10)) => {
+                        (Some(ops.trim().parse::<u16>().unwrap()), None)
+                    },
+                    None => return,
+                    Some(var) => (Some(*var), None),
+                };
+
+            }, 
+            Operation::LSHIFT | Operation::RSHIFT => {
+                let variable: Vec<&str> = ops.split(operation.convert_to_str()).collect();
+                self.values = 
+                match (wires.get(&variable[0]), variable[1].parse()) {
+                    (Some(var), Ok(var2)) => (Some(*var), Some(var2)),
+                    _ => return,
+                };
+
+            }
+            Operation::And | Operation::Or => {
+                let (val1, val2) = ops.split_once(operation.convert_to_str()).unwrap_or_else(|| panic!("Error Splitting"));
+                self.values = 
+                match (wires.get(val1), wires.get(val2)) {
+                    (Some(var), Some(var2)) => (Some(*var), Some(*var2)),
+                    (None, Some(var)) if val1.chars().any(|ch| ch.is_digit(10)) => {
+                        (Some(val1.trim().parse::<u16>().unwrap()), Some(*var))
+                    },
+                    _ => return,
+                };
+
+                
+            },
+        }
+    }
+}
+
+enum Operation {
+    Not,
+    And,
+    Assign,
+    Or, 
+    LSHIFT,
+    RSHIFT
+}
+
+impl Operation {
+    fn convert(op: &str) -> Self {
+        use Operation::*;
+        match op {
+            " AND " => And,
+            " OR " => Or,
+            " LSHIFT " => LSHIFT, 
+            " RSHIFT " => RSHIFT, 
+            "NOT " => Not,
+            " -> " => Assign, 
+            _ => panic!("Invalid Input")
+        }
+    }
+
+    fn convert_to_str<'a>(&'a self) -> &'a str {
+        match self {
+            Operation::Not => "NOT ",
+            Operation::And => " AND ",
+            Operation::Assign => " -> ",
+            Operation::Or => " OR ",
+            Operation::LSHIFT => " LSHIFT ",
+            Operation::RSHIFT => " RSHIFT ",
+        }
+    }
+
 }
 
 impl Day7 {
@@ -29,88 +123,21 @@ impl Day7 {
         Self { input: input.split("\r\n").map(|line| line.to_string()).collect() }
     }
 
-    fn parse_line<'a>(line: &'a str, wires: &mut HashMap<&'a str, u16>, var: Option<&str>) {
-        let operations = [" AND ", " OR ", " LSHIFT ", " RSHIFT ", "NOT ", " -> "];
-        let operation = operations.into_iter().find(|op| line.contains(*op)).unwrap_or("");
-        
-        let ops_and_res: Vec<&str> = line.split(" -> ").collect();
-        let ops = ops_and_res[0];
-        let gate = Gate::new(
-            match operation {
-            " AND " => |a, b| a.unwrap() & b.unwrap(),
-            " OR " => |a, b| a.unwrap() | b.unwrap(),
-            " LSHIFT " => |a, b| a.unwrap() << b.unwrap(),
-            " RSHIFT " => |a, b| a.unwrap() >> b.unwrap(),
-            "NOT " => |a, _| !a.unwrap(),
-            " -> " => |a, _| a.unwrap(),
-            _ => panic!("Invalid input"),
-            }, 
-            ops_and_res[1]
-        );
+    fn operate_on_line<'a>(line: &'a str, wires: &mut HashMap<&'a str, u16>, var: Option<&str>) {
+        let operation =  [" AND ", " OR ", " LSHIFT ", " RSHIFT ", "NOT ", " -> "]
+        .into_iter()
+        .find(|op| line.contains(*op))
+        .map(Operation::convert).unwrap_or_else(||panic!("Invalid input"));
+        let (ops, key) = line.split_once(" -> ").unwrap();
+        let mut gate = Gate::new(&operation, key);
 
         //For part2
-        if let Some(unpacked_var) = var {
-            if unpacked_var == gate.key { return }
-        }
+        if var.is_some_and(|val| val == gate.key) { return }
 
-        Self::operate(wires, ops, operation, gate);
+
+        gate.update_values(&wires, ops, &operation);
+        wires.insert(gate.key, gate.execute_op());
     }
-
-    fn operate<'a>(wires: &mut HashMap<&'a str, u16>, ops: &str, operation: &str, mut gate: Gate<'a>) {
-        match operation {
-            "NOT " => {
-                let var: Vec<&str> = ops.split("NOT ").collect();
-                gate.first_var = match wires.get(var[1]) {
-                    Some(var) => Some(*var),
-                    None => return,
-                };
-
-                let res = (gate.operation)(gate.first_var, None);
-                wires.insert(gate.key, res);
-            },
-            " -> " => {
-                //if a variable is given and not a number, this is handled here
-                gate.first_var = match wires.get(&ops) {
-                    None if ops.chars().any(|ch| ch.is_digit(10)) => {
-                        Some(ops.trim().parse::<u16>().unwrap()) 
-                    },
-                    None => return,
-                    Some(var) => Some(*var),
-                };
-
-                let res = (gate.operation)(gate.first_var, None);
-                wires.insert(gate.key, res);
-            }, 
-            " LSHIFT " | " RSHIFT " => {
-                let variable: Vec<&str> = ops.split(operation).collect();
-                (gate.first_var, gate.sec_var) = 
-                match (wires.get(&variable[0]), variable[1].parse()) {
-                    (Some(var), Ok(var2)) => (Some(*var), Some(var2)),
-                    _ => return,
-                };
-
-                let res = (gate.operation)(gate.first_var, gate.sec_var);
-                wires.insert(gate.key, res);
-            }
-            " AND " | " OR " => {
-                let variable: Vec<&str> = ops.split(operation).collect();
-
-                (gate.first_var, gate.sec_var) = 
-                match (wires.get(&variable[0]), wires.get(&variable[1])) {
-                    (Some(var), Some(var2)) => (Some(*var), Some(*var2)),
-                    (None, Some(var)) if variable[0].chars().any(|ch| ch.is_digit(10)) => {
-                        (Some(variable[0].trim().parse::<u16>().unwrap()), Some(*var))
-                    },
-                    _ => return,
-                };
-
-                let res = (gate.operation)(gate.first_var, gate.sec_var);
-                wires.insert(gate.key, res);
-            },
-            _ => panic!("Invalid")
-        }
-    }
-
 }
 
 impl Solution for Day7 {
@@ -118,20 +145,16 @@ impl Solution for Day7 {
         let mut variables: HashMap<&str, u16> = HashMap::new();
 
         let mut input = self.input.clone();
-        
         input.sort_by(|a, b| {
-            let cmp = a.len().cmp(&b.len());
-            if cmp == std::cmp::Ordering::Equal {
-                a.cmp(b)
-            } else {
-                cmp
+            match a.len().cmp(&b.len()) {
+                std::cmp::Ordering::Equal => a.cmp(b),
+                cmp => cmp
             }
         });
 
-        let mut i = 0; 
-        while !variables.contains_key(&"a") {
-            Self::parse_line(&input[i % input.len()], &mut variables, None);
-            i += 1;
+        for i in 0.. {
+            Self::operate_on_line(&input[i % input.len()], &mut variables, None);
+            if variables.contains_key(&"a") { break; }
         }
 
         format!("{}", 
@@ -146,19 +169,18 @@ impl Solution for Day7 {
         let mut variables: HashMap<&str, u16> = HashMap::new();
         let input = self.input.clone();
 
-        let mut i = 0; 
-        while !variables.contains_key(&"a") {
-            Self::parse_line(&input[i % input.len()], &mut variables, None);
-            i += 1;
+        for i in 0.. {
+            Self::operate_on_line(&input[i % input.len()], &mut variables, None);
+            if variables.contains_key(&"a") { break; }
         }
 
         let b = *variables.get(&"a").unwrap();
         variables.clear();
         variables.insert("b", b);
-        i = 0;
-        while !variables.contains_key(&"a") {
-            Self::parse_line(&input[i % input.len()], &mut variables, Some("b"));
-            i += 1;
+
+        for i in 0.. {
+            Self::operate_on_line(&input[i % input.len()], &mut variables, Some("b"));
+            if variables.contains_key(&"a") { break; }
         }
 
         format!("{}", 
