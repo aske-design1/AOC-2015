@@ -134,7 +134,6 @@ impl Day7 {
         //For part2
         if var.is_some_and(|val| val == gate.key) { return }
 
-
         gate.update_values(&wires, ops, &operation);
         wires.insert(gate.key, gate.execute_op());
     }
@@ -169,6 +168,11 @@ impl Solution for Day7 {
         let mut variables: HashMap<&str, u16> = HashMap::new();
         let input = self.input.clone();
 
+        input.iter().cycle().any(|line| {
+            Self::operate_on_line(line, &mut variables, None);
+            variables.contains_key(&"a")
+        });
+
         for i in 0.. {
             Self::operate_on_line(&input[i % input.len()], &mut variables, None);
             if variables.contains_key(&"a") { break; }
@@ -178,10 +182,10 @@ impl Solution for Day7 {
         variables.clear();
         variables.insert("b", b);
 
-        for i in 0.. {
-            Self::operate_on_line(&input[i % input.len()], &mut variables, Some("b"));
-            if variables.contains_key(&"a") { break; }
-        }
+        input.iter().cycle().any(|line| {
+            Self::operate_on_line(line, &mut variables, None);
+            variables.contains_key(&"a")
+        });
 
         format!("{}", 
             match variables.get(&"a")  {
@@ -200,5 +204,9 @@ mod tests {
         let day = Day7::new(input.to_string());
         assert_eq!(day.part1(), "1")
     }
-    #[test] fn test2() {}
+    #[test] fn test2() {
+        let input = "123 -> x\r\n456 -> y\r\nx AND y -> d\r\nx OR y -> e\r\nx LSHIFT 2 -> f\r\ny RSHIFT 2 -> g\r\nNOT x -> h\r\nNOT y -> i\r\n1 AND x -> a";
+        let day = Day7::new(input.to_string());
+        assert_eq!(day.part2(), "1");
+    }
 }

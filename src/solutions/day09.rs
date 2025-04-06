@@ -12,32 +12,29 @@ impl Day9 {
         Self { input: input.split("\r\n").map(|line| line.to_string()).collect() }
     }
     fn find_cities<'a>(&'a self) -> Vec<Vec<u32>> {   
-        let mut cities = HashMap::new();
-        for line in self.input.iter() {
-            let split_line: Vec<&str> = line.split(" to ").collect();
-            let split_line2: Vec<&str> = split_line[1].split(" = ").collect(); 
-            let (first_country, sec_country) = (split_line[0], split_line2[0]);
+        let country_list: Vec<_> = self.input.iter().map(|line| {
+            let (country1, to_split) = line.split_once(" to ").unwrap();
+            let (country2, dist) = to_split.split_once(" = ").unwrap(); 
+            (country1, country2, dist.parse::<u32>().unwrap())
+        }).collect();
 
+        let cities = country_list.iter().fold(HashMap::with_capacity(1000), |mut cities, (country1, country2, _)| {
             let len = cities.len();
-            cities.entry(first_country).or_insert(len);
+            cities.entry(*country1).or_insert(len);
             let len = cities.len();
-            cities.entry(sec_country).or_insert(len);
-        }
+            cities.entry(*country2).or_insert(len);
+            cities
+        });
 
-        let mut arr: Vec<Vec<u32>> = vec![vec![0; cities.len()]; cities.len()]; 
-        for line in self.input.iter() {
-            let split_line: Vec<&str> = line.split(" to ").collect();
-            let split_line2: Vec<&str> = split_line[1].split(" = ").collect(); 
-            let (country1, country2, dist) = 
-            (split_line[0], split_line2[0], split_line2[1].parse::<u32>().unwrap());
+        country_list.iter().fold(vec![vec![0; cities.len()]; cities.len()], |mut dists, (country1, country2, dist)| {
+            if let (Some(&idx1), Some(&idx2)) = (cities.get(country1), cities.get(country2)) {
+                dists[idx1][idx2] = *dist;
+                dists[idx2][idx1] = *dist;
+            }
 
-            let (idx1, idx2) = 
-            (*cities.get(&country1).unwrap(), *cities.get(&country2).unwrap());
-            arr[idx1][idx2] = dist;
-            arr[idx2][idx1] = dist;
-        }
+            dists
+        })
 
-        arr
     }
 }
 

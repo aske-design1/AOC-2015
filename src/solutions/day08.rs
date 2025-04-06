@@ -10,20 +10,17 @@ impl Day8 {
         Self { input: Self::split_on_crlf(&input) }
     }
     fn split_on_crlf(input: &[u8]) -> Vec<Vec<u8>> {
-        let mut result = Vec::new();
         let mut start = 0;
-        for i in 1..input.len() {
-            // Check for the \r\n sequence
-            if input[i - 1] == b'\r' && input[i] == b'\n' {
-                // Collect the bytes up to this point, excluding the \r\n
-                if start < i - 1 { result.push(input[start..i - 1].to_vec()); }
-                // Update the start to the byte after \n
-                start = i + 1;
+        input.windows(2).enumerate().filter_map(|(i, window)|
+            if window == &[b'\r', b'\n']{
+                let slice = &input[start..i]; // Get the slice from the last split point to the current \r\n
+                start = i + 2; // Move start to after the \r\n
+                Some(slice.to_vec())
+            } else {
+                None
             }
-        }
-        // Add the remaining bytes after the last \r\n
-        if start < input.len() { result.push(input[start..].to_vec()); }
-        result
+        ).collect()
+
     }
 
     fn convert_to_string_len(line: &Vec<u8>) -> usize {
@@ -40,16 +37,13 @@ impl Day8 {
     }
 
     fn convert_to_encode_len(line: &Vec<u8>) -> usize {
-        let mut total_len = 0; 
-        for i in 0..line.len() {
-            total_len += match line[i] {
+        line.iter().fold(0, |len, symbol| 
+            len + match symbol {
                 b'"' => 2,
                 b'\\' => 2,
-                _ => 1,
+                _ => 1
             }
-        }
-        // Add the start and end ""-marks to the total length 
-        total_len + 2
+        ) + 2
     }
 }
 
